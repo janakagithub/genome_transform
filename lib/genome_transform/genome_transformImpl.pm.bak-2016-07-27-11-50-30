@@ -25,74 +25,7 @@ use Test::More;
 use Config::Simple;
 use JSON;
 use File::Path;
-use File::Basename;
 binmode STDOUT, ":utf8";
-
-# 
-# These are two routines used by sra_reads_to_assembly()
-#
-
-# system_and_check( $cmd)
-#    issue system( $cmd ) then check for error retur
-
-sub  system_and_check
-   {
-    my $cmd = shift;
-    #print "### convert sra command is [$cmd]\n";
-    system( $cmd );
-    if ( $? == -1 )
-       {  die "$cmd failed to execute: $!\n";  }
-    elsif ( $? & 127 )
-       {  printf STDERR "$cmd died with signal %d, %s coredump\n", 
-               ($? & 127), ($? & 128 ) ? "with" : "without";
-          die "$0 terminating\n";
-       }
-    #print "### looks like successful return\n";
-   }
-
-# convert_sra( $filename, $type) 
-#    $filename is SRA filename (string)
-#    (may have different path, but output will be in current working directory)
-#    $type is 'SingleEndLibrary' or 'PairedEndLibrary'
-# runs SRA conversion, converted files (fastq) will be left
-# in working directory, returns converted file name(s) 
-#  - with .fastq extention, in a list
-
-my $sra_convert_program = "/kb/deployment/bin/fastq-dump";
-
-sub  convert_sra
-   {
-    my ( $file, $type ) = @_;
-
-    my $fileroot = $file;
-    $fileroot =~ s/.sra$//;  # remove any .sra extension
-
-    if ( $type eq 'SingleEndLibrary' )
-       {
-        my $outfile = basename( $fileroot ) . ".fastq";
-        system_and_check( "$sra_convert_program $file" );
-        if ( -e $outfile )
-           { return( ( $outfile ) ); }
-        else
-           { # maybe try a few other tricks here before bailing
-             die "did not file expected $outfile from $sra_convert_program\n";
-           }
-       }
-    elsif ( $type eq 'PairedEndLibrary' )
-       {
-        my @outfiles = map( basename( $fileroot ). "_" . $_ . ".fastq", (1,2) );
-        system_and_check( "$sra_convert_program --split-files $file" );
-        if ( -e $outfiles[0] && -e $outfiles[1] )
-           { return( @outfiles ); }
-        else
-           { # maybe try a few other tricks here before bailing
-             die "did not file expected @outfiles from $sra_convert_program\n";
-           }
-       }
-    else
-       { die "$0: convert_sra() did not get correct type:  '$type' should be either 'SingleEndLibrary' or 'PairedEndLibrary'.\n";}
-   }
-
 #END_HEADER
 
 sub new
@@ -606,10 +539,9 @@ reads_to_assembly_params is a reference to a hash where the following keys are d
 	reads_shock_ref has a value which is a genome_transform.shock_ref
 	reads_handle_ref has a value which is a genome_transform.handle_ref
 	reads_type has a value which is a string
-	file_path_list has a value which is a reference to a list where each element is a string
+	file_path_list has a value which is a string
 	workspace has a value which is a genome_transform.workspace_id
 	reads_id has a value which is a genome_transform.object_id
-	outward has a value which is a string
 	insert_size has a value which is a float
 	std_dev has a value which is a float
 shock_ref is a string
@@ -629,10 +561,9 @@ reads_to_assembly_params is a reference to a hash where the following keys are d
 	reads_shock_ref has a value which is a genome_transform.shock_ref
 	reads_handle_ref has a value which is a genome_transform.handle_ref
 	reads_type has a value which is a string
-	file_path_list has a value which is a reference to a list where each element is a string
+	file_path_list has a value which is a string
 	workspace has a value which is a genome_transform.workspace_id
 	reads_id has a value which is a genome_transform.object_id
-	outward has a value which is a string
 	insert_size has a value which is a float
 	std_dev has a value which is a float
 shock_ref is a string
@@ -750,194 +681,6 @@ system ("ls /kb/module/data/");
 	my $msg = "Invalid returns passed to reads_to_assembly:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'reads_to_assembly');
-    }
-    return($return);
-}
-
-
-
-
-=head2 sra_reads_to_assembly
-
-  $return = $obj->sra_reads_to_assembly($reads_to_assembly_params)
-
-=over 4
-
-=item Parameter and return types
-
-=begin html
-
-<pre>
-$reads_to_assembly_params is a genome_transform.reads_to_assembly_params
-$return is a genome_transform.object_id
-reads_to_assembly_params is a reference to a hash where the following keys are defined:
-	reads_shock_ref has a value which is a genome_transform.shock_ref
-	reads_handle_ref has a value which is a genome_transform.handle_ref
-	reads_type has a value which is a string
-	file_path_list has a value which is a reference to a list where each element is a string
-	workspace has a value which is a genome_transform.workspace_id
-	reads_id has a value which is a genome_transform.object_id
-	outward has a value which is a string
-	insert_size has a value which is a float
-	std_dev has a value which is a float
-shock_ref is a string
-handle_ref is a string
-workspace_id is a string
-object_id is a string
-
-</pre>
-
-=end html
-
-=begin text
-
-$reads_to_assembly_params is a genome_transform.reads_to_assembly_params
-$return is a genome_transform.object_id
-reads_to_assembly_params is a reference to a hash where the following keys are defined:
-	reads_shock_ref has a value which is a genome_transform.shock_ref
-	reads_handle_ref has a value which is a genome_transform.handle_ref
-	reads_type has a value which is a string
-	file_path_list has a value which is a reference to a list where each element is a string
-	workspace has a value which is a genome_transform.workspace_id
-	reads_id has a value which is a genome_transform.object_id
-	outward has a value which is a string
-	insert_size has a value which is a float
-	std_dev has a value which is a float
-shock_ref is a string
-handle_ref is a string
-workspace_id is a string
-object_id is a string
-
-
-=end text
-
-
-
-=item Description
-
-
-
-=back
-
-=cut
-
-sub sra_reads_to_assembly
-{
-    my $self = shift;
-    my($reads_to_assembly_params) = @_;
-
-    my @_bad_arguments;
-    (ref($reads_to_assembly_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"reads_to_assembly_params\" (value was \"$reads_to_assembly_params\")");
-    if (@_bad_arguments) {
-	my $msg = "Invalid arguments passed to sra_reads_to_assembly:\n" . join("", map { "\t$_\n" } @_bad_arguments);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'sra_reads_to_assembly');
-    }
-
-    my $ctx = $genome_transform::genome_transformServer::CallContext;
-    my($return);
-    #BEGIN sra_reads_to_assembly
-
-    my $token=$ctx->token;
-    my $provenance=$ctx->provenance;
-    #print "in sra_reads_to_assembly()\n";
-    #print "workspace is ", $self->{'workspace-url'}, "\ntoken is ", $token, "\n";
-    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
-
-    my $file_path = $reads_to_assembly_params->{file_path_list};
-    my $workspace = $reads_to_assembly_params->{workspace};
-    my $reads_id = $reads_to_assembly_params->{reads_id};
-    my $reads_type = $reads_to_assembly_params->{reads_type};
-    my $std = $reads_to_assembly_params->{std_dev};
-    my $is = $reads_to_assembly_params->{insert_size};
-    #print &Dumper ($reads_to_assembly_params);
-
-    print "\n\nstarting reads to assembly method.....\n\n\n";
-    my $tmpDir = "/kb/module/work/tmp";
-    my $expDir = "/kb/module/work/tmp/Genomes";
-
-    if (-d $expDir)
-       {   print "temp/Genomes directory exists, continuing..\n";  }
-    else
-       {
-        mkpath([$tmpDir], 1);
-        mkpath([$expDir], 1);
-        print "creating a temp/Genomes direcotory for data processing, continuing..\n";
-       }
-
-    chdir( $tmpDir ) || die "Can't chdir to $tmpDir: $!\n";
-    system ("ls /kb/module/data/");
-    #print "before convert_sra( ", $file_path->[0], ", ", $reads_type, ") current directory contents are\n";
-    system( "ls");
-
-    my @fq_files = convert_sra( $file_path->[0], $reads_type );   # convert
-    print "after convert_sra( ", $file_path->[0], ", ", $reads_type, "), result fq_files are ", join( ",", @fq_files), "\n";
-    system( "ls");
-
-    # there may be one or two fastq files resultant from the SRA conversion, depending on
-    # whether or not this is a single or paired end library.  Construct the transform script
-    # command line with one file, and append 2nd file argument if it exists
-
-    my @cmd = ("/kb/deployment/bin/trns_transform_seqs_to_KBaseAssembly_type", "-t", $reads_type, 
-                "-o","/kb/module/work/tmp/Genomes/pereads.json", 
-                "--shock_service_url","http://ci.kbase.us/services/shock-api", 
-                "--handle_service_url","https://ci.kbase.us/services/handle_service", 
-                "--outward", 0,
-                "-f", $fq_files[0]
-                );
-    push( @cmd, "-f", $fq_files[1], ) if ( @fq_files == 2 );
-    #print "transform command is ", join( " ", @cmd ), "\n";
-
-    # run the transform script (same as with reads_to_assembly() )
-    my $rc = system(@cmd);
-    
-    my $json;
-    {
-        local $/; #Enable 'slurp' mode
-        open my $fh, "<", "/kb/module/work/tmp/Genomes/pereads.json";
-        #open my $fh, "<", "/kb/module/data/pereads.json";
-        $json = <$fh>;
-        close $fh;
-        #print "json is\n$json\n";
-    }
-
-    my $ro = decode_json($json); 
-    #print &Dumper ($ro);
-
-    my $handle_type = 'KBaseAssembly.PairedEndLibrary';
-    if ( $reads_type eq 'SingleEndLibrary' )
-       {  $handle_type = 'KBaseAssembly.SingleEndLibrary'; }
-
-    #print "\n\n saving the object, handle type [$handle_type], into the workspace\n";
-
-    my $obj_info_list = undef;
-        eval {
-            $obj_info_list = $wsClient->save_objects({
-                'id'=>$workspace,
-                'objects'=>[{
-                'type'=>$handle_type,
-                'data'=>$ro,
-                'name'=>$reads_id,
-                'provenance'=>$provenance
-                }]
-            });
-        };
-    if ($@) {
-        #print "Error saving modified genome object to workspace:\n", $@;
-        die "Error saving modified genome object to workspace:\n".$@;
-    }
-
-    $return = $reads_id;
-    #print &Dumper ($obj_info_list);
-
-
-    #END sra_reads_to_assembly
-    my @_bad_returns;
-    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
-    if (@_bad_returns) {
-	my $msg = "Invalid returns passed to sra_reads_to_assembly:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
-							       method_name => 'sra_reads_to_assembly');
     }
     return($return);
 }
@@ -1116,37 +859,6 @@ a string
 =item Description
 
 Name of an report id
-
-
-=item Definition
-
-=begin html
-
-<pre>
-a string
-</pre>
-
-=end html
-
-=begin text
-
-a string
-
-=end text
-
-=back
-
-
-
-=head2 outward
-
-=over 4
-
-
-
-=item Description
-
-status of the reads pair point outward or not
 
 
 =item Definition
@@ -1559,10 +1271,9 @@ a reference to a hash where the following keys are defined:
 reads_shock_ref has a value which is a genome_transform.shock_ref
 reads_handle_ref has a value which is a genome_transform.handle_ref
 reads_type has a value which is a string
-file_path_list has a value which is a reference to a list where each element is a string
+file_path_list has a value which is a string
 workspace has a value which is a genome_transform.workspace_id
 reads_id has a value which is a genome_transform.object_id
-outward has a value which is a string
 insert_size has a value which is a float
 std_dev has a value which is a float
 
@@ -1576,10 +1287,9 @@ a reference to a hash where the following keys are defined:
 reads_shock_ref has a value which is a genome_transform.shock_ref
 reads_handle_ref has a value which is a genome_transform.handle_ref
 reads_type has a value which is a string
-file_path_list has a value which is a reference to a list where each element is a string
+file_path_list has a value which is a string
 workspace has a value which is a genome_transform.workspace_id
 reads_id has a value which is a genome_transform.object_id
-outward has a value which is a string
 insert_size has a value which is a float
 std_dev has a value which is a float
 

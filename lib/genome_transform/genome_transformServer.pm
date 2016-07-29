@@ -37,6 +37,12 @@ our %return_counts = (
         'tsv_to_exp' => 1,
         'tsv_to_exp_async' => 1,
         'tsv_to_exp_check' => 1,
+        'reads_to_assembly' => 1,
+        'reads_to_assembly_async' => 1,
+        'reads_to_assembly_check' => 1,
+        'sra_reads_to_assembly' => 1,
+        'sra_reads_to_assembly_async' => 1,
+        'sra_reads_to_assembly_check' => 1,
         'version' => 1,
 );
 
@@ -50,24 +56,36 @@ our %method_authentication = (
         'tsv_to_exp' => 'required',
         'tsv_to_exp_async' => 'required',
         'tsv_to_exp_check' => 'required',
+        'reads_to_assembly' => 'required',
+        'reads_to_assembly_async' => 'required',
+        'reads_to_assembly_check' => 'required',
+        'sra_reads_to_assembly' => 'required',
+        'sra_reads_to_assembly_async' => 'required',
+        'sra_reads_to_assembly_check' => 'required',
 );
 
 our %sync_methods = (
         'genbank_to_genome' => 1,
         'fasta_to_contig' => 1,
         'tsv_to_exp' => 1,
+        'reads_to_assembly' => 1,
+        'sra_reads_to_assembly' => 1,
 );
 
 our %async_run_methods = (
         'genbank_to_genome_async' => 'genome_transform.genbank_to_genome',
         'fasta_to_contig_async' => 'genome_transform.fasta_to_contig',
         'tsv_to_exp_async' => 'genome_transform.tsv_to_exp',
+        'reads_to_assembly_async' => 'genome_transform.reads_to_assembly',
+        'sra_reads_to_assembly_async' => 'genome_transform.sra_reads_to_assembly',
 );
 
 our %async_check_methods = (
         'genbank_to_genome_check' => 'genome_transform.genbank_to_genome',
         'fasta_to_contig_check' => 'genome_transform.fasta_to_contig',
         'tsv_to_exp_check' => 'genome_transform.tsv_to_exp',
+        'reads_to_assembly_check' => 'genome_transform.reads_to_assembly',
+        'sra_reads_to_assembly_check' => 'genome_transform.sra_reads_to_assembly',
 );
 
 sub _build_valid_methods
@@ -83,6 +101,12 @@ sub _build_valid_methods
         'tsv_to_exp' => 1,
         'tsv_to_exp_async' => 1,
         'tsv_to_exp_check' => 1,
+        'reads_to_assembly' => 1,
+        'reads_to_assembly_async' => 1,
+        'reads_to_assembly_check' => 1,
+        'sra_reads_to_assembly' => 1,
+        'sra_reads_to_assembly_async' => 1,
+        'sra_reads_to_assembly_check' => 1,
         'version' => 1,
     };
     return $methods;

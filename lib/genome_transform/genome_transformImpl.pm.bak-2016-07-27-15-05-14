@@ -25,12 +25,7 @@ use Test::More;
 use Config::Simple;
 use JSON;
 use File::Path;
-use File::Basename;
 binmode STDOUT, ":utf8";
-
-# 
-# These are two routines used by sra_reads_to_assembly()
-#
 
 # system_and_check( $cmd)
 #    issue system( $cmd ) then check for error retur
@@ -38,7 +33,7 @@ binmode STDOUT, ":utf8";
 sub  system_and_check
    {
     my $cmd = shift;
-    #print "### convert sra command is [$cmd]\n";
+    print "### convert sra command is [$cmd]\n";
     system( $cmd );
     if ( $? == -1 )
        {  die "$cmd failed to execute: $!\n";  }
@@ -47,29 +42,27 @@ sub  system_and_check
                ($? & 127), ($? & 128 ) ? "with" : "without";
           die "$0 terminating\n";
        }
-    #print "### looks like successful return\n";
+    print "### looks like successful return\n";
    }
 
-# convert_sra( $filename, $type) 
+   # convert_sra( $filename, $mode) 
 #    $filename is SRA filename (string)
-#    (may have different path, but output will be in current working directory)
-#    $type is 'SingleEndLibrary' or 'PairedEndLibrary'
+#    $mode is 'se' for single end, 'pe' for paired end
 # runs SRA conversion, converted files (fastq) will be left
 # in working directory, returns converted file name(s) 
 #  - with .fastq extention, in a list
 
-my $sra_convert_program = "/kb/deployment/bin/fastq-dump";
-
+my $sra_convert_program = "/kb/deployment/bin/fastq-comp";
 sub  convert_sra
    {
-    my ( $file, $type ) = @_;
+    my ( $file, $mode ) = @_;
 
     my $fileroot = $file;
     $fileroot =~ s/.sra$//;  # remove any .sra extension
 
-    if ( $type eq 'SingleEndLibrary' )
+    if ( $mode eq 'se' )
        {
-        my $outfile = basename( $fileroot ) . ".fastq";
+        my $outfile = $fileroot . ".fastq";
         system_and_check( "$sra_convert_program $file" );
         if ( -e $outfile )
            { return( ( $outfile ) ); }
@@ -78,9 +71,9 @@ sub  convert_sra
              die "did not file expected $outfile from $sra_convert_program\n";
            }
        }
-    elsif ( $type eq 'PairedEndLibrary' )
+    elsif ( $mode eq 'pe' )
        {
-        my @outfiles = map( basename( $fileroot ). "_" . $_ . ".fastq", (1,2) );
+        my @outfiles = map( $fileroot . "_" . $_ . ".fastq", (1,2) );
         system_and_check( "$sra_convert_program --split-files $file" );
         if ( -e $outfiles[0] && -e $outfiles[1] )
            { return( @outfiles ); }
@@ -89,8 +82,6 @@ sub  convert_sra
              die "did not file expected @outfiles from $sra_convert_program\n";
            }
        }
-    else
-       { die "$0: convert_sra() did not get correct type:  '$type' should be either 'SingleEndLibrary' or 'PairedEndLibrary'.\n";}
    }
 
 #END_HEADER
@@ -840,8 +831,6 @@ sub sra_reads_to_assembly
 
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
-    #print "in sra_reads_to_assembly()\n";
-    #print "workspace is ", $self->{'workspace-url'}, "\ntoken is ", $token, "\n";
     my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
 
     my $file_path = $reads_to_assembly_params->{file_path_list};
@@ -850,45 +839,29 @@ sub sra_reads_to_assembly
     my $reads_type = $reads_to_assembly_params->{reads_type};
     my $std = $reads_to_assembly_params->{std_dev};
     my $is = $reads_to_assembly_params->{insert_size};
-    #print &Dumper ($reads_to_assembly_params);
+    print &Dumper ($reads_to_assembly_params);
 
     print "\n\nstarting reads to assembly method.....\n\n\n";
     my $tmpDir = "/kb/module/work/tmp";
     my $expDir = "/kb/module/work/tmp/Genomes";
 
-    if (-d $expDir)
-       {   print "temp/Genomes directory exists, continuing..\n";  }
-    else
-       {
+    if (-d $expDir){
+
+        print "temp/Genomes directory exists, continuing..\n";
+    }
+    else{
+
         mkpath([$tmpDir], 1);
         mkpath([$expDir], 1);
         print "creating a temp/Genomes direcotory for data processing, continuing..\n";
-       }
+}
 
-    chdir( $tmpDir ) || die "Can't chdir to $tmpDir: $!\n";
-    system ("ls /kb/module/data/");
-    #print "before convert_sra( ", $file_path->[0], ", ", $reads_type, ") current directory contents are\n";
-    system( "ls");
 
-    my @fq_files = convert_sra( $file_path->[0], $reads_type );   # convert
-    print "after convert_sra( ", $file_path->[0], ", ", $reads_type, "), result fq_files are ", join( ",", @fq_files), "\n";
-    system( "ls");
+system ("ls /kb/module/data/");
 
-    # there may be one or two fastq files resultant from the SRA conversion, depending on
-    # whether or not this is a single or paired end library.  Construct the transform script
-    # command line with one file, and append 2nd file argument if it exists
-
-    my @cmd = ("/kb/deployment/bin/trns_transform_seqs_to_KBaseAssembly_type", "-t", $reads_type, 
-                "-o","/kb/module/work/tmp/Genomes/pereads.json", 
-                "--shock_service_url","http://ci.kbase.us/services/shock-api", 
-                "--handle_service_url","https://ci.kbase.us/services/handle_service", 
-                "--outward", 0,
-                "-f", $fq_files[0]
-                );
-    push( @cmd, "-f", $fq_files[1], ) if ( @fq_files == 2 );
-    #print "transform command is ", join( " ", @cmd ), "\n";
-
-    # run the transform script (same as with reads_to_assembly() )
+    my @cmd = ("/kb/deployment/bin/sra_trns_transform_seqs_to_KBaseAssembly_type", "-t", $reads_type, "--sra", "1", "-f",$file_path->[0], "-o","/kb/module/work/tmp/Genomes/pereads.json", "--shock_service_url","http://ci.kbase.us/services/shock-api", "--handle_service_url","https://ci.kbase.us/services/handle_service", "--outward",0 );
+    #my @cmd = ("/kb/deployment/bin/trns_transform_seqs_to_KBaseAssembly_type", "-t", $reads_type, "--sra 1", "-f",$file_path->[0], "-f", $file_path->[1], "-o","/kb/module/work/tmp/Genomes/pereads.json", "--shock_service_url","http://ci.kbase.us/services/shock-api", "--handle_service_url","https://ci.kbase.us/services/handle_service", "--outward",0 );
+    #my @cmd = ("/kb/deployment/bin/trns_transform_seqs_to_KBaseAssembly_type", "-t", $reads_type, "-f","/data/bulktest/data/bulktest/janakakbase/reads/frag_1.fastq", "-f","/data/bulktest/data/bulktest/janakakbase/reads/frag_2.fastq", "-o","/kb/module/work/tmp/Genomes/pereads.json", "--shock_service_url","http://ci.kbase.us/services/shock-api", "--handle_service_url","https://ci.kbase.us/services/handle_service");
     my $rc = system(@cmd);
     
     my $json;
@@ -898,24 +871,19 @@ sub sra_reads_to_assembly
         #open my $fh, "<", "/kb/module/data/pereads.json";
         $json = <$fh>;
         close $fh;
-        #print "json is\n$json\n";
     }
 
     my $ro = decode_json($json); 
-    #print &Dumper ($ro);
+    print &Dumper ($ro);
 
-    my $handle_type = 'KBaseAssembly.PairedEndLibrary';
-    if ( $reads_type eq 'SingleEndLibrary' )
-       {  $handle_type = 'KBaseAssembly.SingleEndLibrary'; }
-
-    #print "\n\n saving the object, handle type [$handle_type], into the workspace\n";
+    print "\n\n saving the object into the workspace\n";
 
     my $obj_info_list = undef;
         eval {
             $obj_info_list = $wsClient->save_objects({
-                'id'=>$workspace,
+                'id'=>7995,
                 'objects'=>[{
-                'type'=>$handle_type,
+                'type'=>'KBaseAssembly.PairedEndLibrary',
                 'data'=>$ro,
                 'name'=>$reads_id,
                 'provenance'=>$provenance
@@ -923,12 +891,11 @@ sub sra_reads_to_assembly
             });
         };
     if ($@) {
-        #print "Error saving modified genome object to workspace:\n", $@;
         die "Error saving modified genome object to workspace:\n".$@;
     }
 
     $return = $reads_id;
-    #print &Dumper ($obj_info_list);
+    print &Dumper ($obj_info_list);
 
 
     #END sra_reads_to_assembly

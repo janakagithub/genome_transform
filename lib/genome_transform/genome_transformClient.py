@@ -198,4 +198,11 @@ class genome_transform(object):
         resp = self._call('genome_transform.reads_to_assembly',
                           [reads_to_assembly_params], json_rpc_context)
         return resp[0]
+  
+    def sra_reads_to_assembly(self, reads_to_assembly_params, json_rpc_context = None):
+        if json_rpc_context and type(json_rpc_context) is not dict:
+            raise ValueError('Method sra_reads_to_assembly: argument json_rpc_context is not type dict as required.')
+        resp = self._call('genome_transform.sra_reads_to_assembly',
+                          [reads_to_assembly_params], json_rpc_context)
+        return resp[0]
  

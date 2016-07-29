@@ -206,4 +206,21 @@ public class GenomeTransformClient {
         List<String> res = caller.jsonrpcCall("genome_transform.reads_to_assembly", args, retType, true, true, jsonRpcContext);
         return res.get(0);
     }
+
+    /**
+     * <p>Original spec-file function name: sra_reads_to_assembly</p>
+     * <pre>
+     * </pre>
+     * @param   arg1   instance of type {@link us.kbase.genometransform.ReadsToAssemblyParams ReadsToAssemblyParams} (original type "reads_to_assembly_params")
+     * @return   instance of original type "object_id" (Name of an object in the KBase workspace)
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String sraReadsToAssembly(ReadsToAssemblyParams arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(arg1);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("genome_transform.sra_reads_to_assembly", args, retType, true, true, jsonRpcContext);
+        return res.get(0);
+    }
 }

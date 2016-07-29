@@ -165,4 +165,6 @@ module genome_transform {
 
    funcdef reads_to_assembly(reads_to_assembly_params) returns (object_id) authentication required;
 
+   funcdef sra_reads_to_assembly(reads_to_assembly_params) returns (object_id) authentication required;
+
 };
