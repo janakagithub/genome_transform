@@ -262,8 +262,8 @@ sub  convert_sra
 
 sub  determine_relevant_shock_url
    {
-    #my $self = shift;
-    #my $shock_url = $self->{'shock-url'};
+    my $self = shift;
+    my $shock_url = $self->{'shock-url'};
 
     # Is far as I know, the shock-direct link is not in the configuration.
     # So, we start with the shock URL from the configuration, ie "https://ci.kbase.us/services/shock-api"
