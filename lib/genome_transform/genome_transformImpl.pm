@@ -256,38 +256,37 @@ sub  convert_sra
 # $shock_url = determine_relevant_shock_url() is invoked by various methods below to determine
 # URL for fastq uploads to shock based on the runtime environment.   We want to use the direct
 # http: url to the shock server because the nginx proxy won't handle extremely large files,
-# but the direct URL won't work for docker container testing.
+# but the direct URL won't work for docker container testing.   This examines the 
+# redirect provided by Dan Olson and Shane Conan and returns the value
 #
 
 sub  determine_relevant_shock_url
    {
-    my $self = shift;
-    my $shock_url = $self->{'shock-url'};
+    #my $self = shift;
+    #my $shock_url = $self->{'shock-url'};
 
-    # if running on DTN AWE, use the direct connection.  This is required for large files
-    # since the nginx proxy complains if the file is too big.
+    # Is far as I know, the shock-direct link is not in the configuration.
+    # So, we start with the shock URL from the configuration, ie "https://ci.kbase.us/services/shock-api"
+    # and reform the shock-direct link from that into "https://ci.kbase.us/services/shock-direct"
 
-    print "in determine_relevant_shock_url, AWE_CLIENTGROUP is [", $ENV{'AWE_CLIENTGROUP'} , "]\n";
-    if ( $ENV{'AWE_CLIENTGROUP'} eq "kb_upload" )
-       {
-        my $shock_direct = $shock_url;                 # create shock-direct url based on
-        $shock_direct =~ s/shock-api/shock-direct/;    # current shock url
-        my $ua = LWP::UserAgent->new;
-        my $req = HTTP::Request->new( GET=>$shock_direct );
-        my $res = $ua->request( $req );
-        if ( $res->is_success && $res->previous )
-            {
-              print $req->url, ' redirected to ', $res->request->uri, "\n";
-              $shock_url = $res->request->uri;
-            }
-        else
-            { print $req->url, ": not redirected\n"; }
+    my $shock_direct = $shock_url;                 # create shock-direct url based on
+    $shock_direct =~ s/shock-api/shock-direct/;    # current shock url
+    my $ua = LWP::UserAgent->new;
+    my $req = HTTP::Request->new( GET=>$shock_direct );
+    my $res = $ua->request( $req );
+    if ( $res->is_success && $res->previous )
+       { 
+        print $req->url, ' redirected to ', $res->request->uri, "\n"; 
+        $shock_url = $res->request->uri;
        }
+    else
+       { print $req->url, ": not redirected\n"; }
 
     print "relevant shock URL is [$shock_url]\n";
 
     return( $shock_url );
    }
+
 
 
 #END_HEADER
