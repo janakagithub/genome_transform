@@ -111,7 +111,7 @@ module genome_transform {
 
 		workspace_id workspace;
 		object_id genome_id;
-		object_id contigset_id;
+		object_id html_link;
    } genbank_to_genome_params;
 
    funcdef genbank_to_genome(genbank_to_genome_params) returns (object_id) authentication required;

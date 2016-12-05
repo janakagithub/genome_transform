@@ -2,10 +2,10 @@ package genome_transform::genome_transformImpl;
 use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
-# http://semver.org
-our $VERSION = "0.0.1";
-our $GIT_URL = "https://github.com/janakagithub/genome_transform";
-our $GIT_COMMIT_HASH = "fe1df0ace65d30e042bb022ec2305eabde3582e3";
+# http://semver.org 
+our $VERSION = '0.0.1';
+our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
+our $GIT_COMMIT_HASH = '3ca4f9ded426cd9df43e2c3ab67add541dbe9b45';
 
 =head1 NAME
 
@@ -343,7 +343,7 @@ genbank_to_genome_params is a reference to a hash where the following keys are d
 	genbank_file_path has a value which is a genome_transform.file_path
 	workspace has a value which is a genome_transform.workspace_id
 	genome_id has a value which is a genome_transform.object_id
-	contigset_id has a value which is a genome_transform.object_id
+	html_link has a value which is a genome_transform.object_id
 shock_ref is a string
 file_path is a string
 workspace_id is a string
@@ -362,7 +362,7 @@ genbank_to_genome_params is a reference to a hash where the following keys are d
 	genbank_file_path has a value which is a genome_transform.file_path
 	workspace has a value which is a genome_transform.workspace_id
 	genome_id has a value which is a genome_transform.object_id
-	contigset_id has a value which is a genome_transform.object_id
+	html_link has a value which is a genome_transform.object_id
 shock_ref is a string
 file_path is a string
 workspace_id is a string
@@ -1436,7 +1436,7 @@ sub rna_sample_set
 
 
 
-=head2 status
+=head2 status 
 
   $return = $obj->status()
 
@@ -2205,7 +2205,7 @@ genbank_shock_ref has a value which is a genome_transform.shock_ref
 genbank_file_path has a value which is a genome_transform.file_path
 workspace has a value which is a genome_transform.workspace_id
 genome_id has a value which is a genome_transform.object_id
-contigset_id has a value which is a genome_transform.object_id
+html_link has a value which is a genome_transform.object_id
 
 </pre>
 
@@ -2218,7 +2218,7 @@ genbank_shock_ref has a value which is a genome_transform.shock_ref
 genbank_file_path has a value which is a genome_transform.file_path
 workspace has a value which is a genome_transform.workspace_id
 genome_id has a value which is a genome_transform.object_id
-contigset_id has a value which is a genome_transform.object_id
+html_link has a value which is a genome_transform.object_id
 
 
 =end text

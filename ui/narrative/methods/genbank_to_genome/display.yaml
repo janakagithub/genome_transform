@@ -1,9 +1,9 @@
 #
 # define display information
 #
-name: GenBank to genome
+name: GenBank Genome Upload
 tooltip: |
-    Transform GenBank files into KBase genome objects
+    Transform GenBank genome files into KBase genome objects
 screenshots: []
 
 icon: icon.png
@@ -28,14 +28,14 @@ suggestions:
 #
 parameters :
     genbank_file_path:
-        ui-name : Path to file containing genbank file on local file system
-        short-hint : Path to file containing genbank file on local file system
+        ui-name : GenBank genome
+        short-hint : Selected GenBank file
     genome_id:
         ui-name : Name of the genome or id of the genome
         short-hint : Name of the genome or id of the genome
-    contigset_id:
-        ui-name : Name of the contig set or id of the contig set
-        short-hint : Name of the contig set or id of the contig set
+    html_link:
+        ui-name : Optional html link
+        short-hint : Optional html link for uploading a genome from public html space
 
 description : |
-    <p>This is a simple method designed to illustrate the KBase SDK.</p>
+    <p>This method upload GenBank files from users ftp space into the narrative workspace.</p>
