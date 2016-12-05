@@ -16,7 +16,7 @@
             "optional" : true,
             "advanced" : false,
             "allow_multiple" : false,
-            "default_values" : [ "/data/bulktest/data/bulktest/janakakbase/NC_003197.gbk" ],
+            "default_values" : [ "NC_003197.gbk" ],
             "field_type" : "text",
             "text_options" : {
                 "valid_ws_types" : [ ]

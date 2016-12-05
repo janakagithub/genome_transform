@@ -28,13 +28,13 @@ suggestions:
 #
 parameters :
     genbank_file_path:
-        ui-name : GenBank genome
+        ui-name : GenBank Genome File
         short-hint : Selected GenBank file
     genome_id:
-        ui-name : Name of the genome or id of the genome
-        short-hint : Name of the genome or id of the genome
+        ui-name : Name or id of the Genome
+        short-hint : Name or id of the genome that will be saved in KBase Narrative
     html_link:
-        ui-name : Optional html link
+        ui-name : Optional html link for uploading a genome
         short-hint : Optional html link for uploading a genome from public html space
 
 description : |
