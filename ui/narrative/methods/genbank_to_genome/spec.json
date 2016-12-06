@@ -8,30 +8,27 @@
     "categories": ["active","upload"],
     "widgets": {
         "input": null,
-        "output": "kbaseReportView"
+        "output": "kbaseGenomeView"
     },
     "parameters": [
         {
             "id" : "genbank_file_path",
-            "optional" : true,
-            "advanced" : false,
-            "allow_multiple" : false,
-            "default_values" : [ "NC_003197.gbk" ],
-            "field_type" : "text",
-            "text_options" : {
-                "valid_ws_types" : [ ]
-            }
-        },
-        {
-            "id" : "genome_id",
             "optional" : false,
             "advanced" : false,
             "allow_multiple" : false,
             "default_values" : [ "" ],
-            "field_type" : "text",
-            "text_options" : {
-                "valid_ws_types" : [ ],
-                "is_output_name" : true
+            "field_type" : "textsubdata",
+            "textsubdata_options" : {
+              "subdata_selection": {
+                "service_function": "ftp_service.list_files",
+                "service_version": "dev",
+                "parameter_id" : "genbank_file",
+                "subdata_included" : ["data/col_ids"],
+                "path_to_subdata": ["data","col_ids"]
+              },
+              "multiselection":false,
+              "show_src_obj":false,
+              "allow_custom":false
             }
         },
         {
@@ -45,7 +42,20 @@
                 "valid_ws_types" : [ ],
                 "is_output_name" : true
             }
+        },
+        {
+            "id": "genome_id",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "" ],
+            "field_type": "text",
+            "text_options": {
+                "valid_ws_types": ["KBaseGenomes.Genome"],
+                "is_output_name":true
+            }
         }
+
     ],
     "behavior": {
         "service-mapping": {
@@ -76,8 +86,12 @@
                   "target_property": "ws"
                 },
                 {
-                    "input_parameter": "genbank_file_path",
-                    "target_property": "id"
+                  "constant_value": "KBaseGenomes.Genome",
+                  "target_property": "type"
+                },
+                {
+                  "input_parameter": "genome_id",
+                  "target_property": "id"
                 },
                 {
                     "constant_value": "16",
