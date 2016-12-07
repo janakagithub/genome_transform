@@ -116,6 +116,15 @@ module genome_transform {
 
    funcdef genbank_to_genome(genbank_to_genome_params) returns (object_id) authentication required;
 
+   	typedef structure {
+		file_path genbank_file_path;
+		workspace_id workspace;
+		object_id genome_id;
+		object_id html_link;
+   	} narrativeGenbank_to_genome_params;
+
+   funcdef narrative_genbank_to_genome(narrativeGenbank_to_genome_params) returns (object_id) authentication required;
+
    /*
         Input parameters for the "fasta_to_contig" function.
 

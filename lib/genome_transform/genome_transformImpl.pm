@@ -2,10 +2,10 @@ package genome_transform::genome_transformImpl;
 use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
-# http://semver.org 
+# http://semver.org
 our $VERSION = '0.0.1';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = '3ca4f9ded426cd9df43e2c3ab67add541dbe9b45';
+our $GIT_COMMIT_HASH = '4cac77ae725e05b5c120a8520ea00cdd98c74029';
 
 =head1 NAME
 
@@ -256,7 +256,7 @@ sub  convert_sra
 # $shock_url = determine_relevant_shock_url() is invoked by various methods below to determine
 # URL for fastq uploads to shock based on the runtime environment.   We want to use the direct
 # http: url to the shock server because the nginx proxy won't handle extremely large files,
-# but the direct URL won't work for docker container testing.   This examines the 
+# but the direct URL won't work for docker container testing.   This examines the
 # redirect provided by Dan Olson and Shane Conan and returns the value
 #
 
@@ -275,8 +275,8 @@ sub  determine_relevant_shock_url
     my $req = HTTP::Request->new( GET=>$shock_direct );
     my $res = $ua->request( $req );
     if ( $res->is_success && $res->previous )
-       { 
-        print $req->url, ' redirected to ', $res->request->uri, "\n"; 
+       {
+        print $req->url, ' redirected to ', $res->request->uri, "\n";
         $shock_url = $res->request->uri;
        }
     else
@@ -448,6 +448,133 @@ sub genbank_to_genome
 	my $msg = "Invalid returns passed to genbank_to_genome:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'genbank_to_genome');
+    }
+    return($return);
+}
+
+
+
+
+=head2 narrative_genbank_to_genome
+
+  $return = $obj->narrative_genbank_to_genome($narrativeGenbank_to_genome_params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$narrativeGenbank_to_genome_params is a genome_transform.narrativeGenbank_to_genome_params
+$return is a genome_transform.object_id
+narrativeGenbank_to_genome_params is a reference to a hash where the following keys are defined:
+	genbank_file_path has a value which is a genome_transform.file_path
+	workspace has a value which is a genome_transform.workspace_id
+	genome_id has a value which is a genome_transform.object_id
+	html_link has a value which is a genome_transform.object_id
+file_path is a string
+workspace_id is a string
+object_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$narrativeGenbank_to_genome_params is a genome_transform.narrativeGenbank_to_genome_params
+$return is a genome_transform.object_id
+narrativeGenbank_to_genome_params is a reference to a hash where the following keys are defined:
+	genbank_file_path has a value which is a genome_transform.file_path
+	workspace has a value which is a genome_transform.workspace_id
+	genome_id has a value which is a genome_transform.object_id
+	html_link has a value which is a genome_transform.object_id
+file_path is a string
+workspace_id is a string
+object_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub narrative_genbank_to_genome
+{
+    my $self = shift;
+    my($narrativeGenbank_to_genome_params) = @_;
+
+    my @_bad_arguments;
+    (ref($narrativeGenbank_to_genome_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"narrativeGenbank_to_genome_params\" (value was \"$narrativeGenbank_to_genome_params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to narrative_genbank_to_genome:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'narrative_genbank_to_genome');
+    }
+
+    my $ctx = $genome_transform::genome_transformServer::CallContext;
+    my($return);
+    #BEGIN narrative_genbank_to_genome
+
+    print &Dumper ($narrativeGenbank_to_genome_params);
+
+    my $file_path = "/data/bulk/$ctx->{user_id}/$narrativeGenbank_to_genome_params->{genbank_file_path}";
+    my $workspace = $narrativeGenbank_to_genome_params->{workspace};
+    my $genome_id = $narrativeGenbank_to_genome_params->{genome_id};
+    my $contig_id = $narrativeGenbank_to_genome_params->{contigset_id};
+
+        $genome_id = $genome_id."";
+
+    print "file-path  $file_path\n\n";
+    my $tmpDir = "/kb/module/work/tmp";
+    my $expDir = "/kb/module/work/tmp/Genomes";
+
+    if (-d $expDir){
+        print "temp/Genome directory exists, continuing..\n";
+    }
+    else{
+        mkpath([$tmpDir], 1);
+        mkpath([$expDir], 1);
+        print "creating a temp/expDir direcotory for data processing, continuing..\n";
+    }
+
+
+    $file_path = decompress_if_needed( $file_path );
+    ################################
+
+    #my @cmd = ("/kb/deployment/bin/trns_transform_seqs_to_KBaseAssembly_type", "-t", $reads_type, "-f","/data/bulktest/data/bulktest/janakakbase/reads/frag_1.fastq", "-f","/data/bulktest/data/bulktest/janakakbase/reads/frag_2.fastq", "-o","/kb/module/work/tmp/Genomes/pereads.json", "--shock_service_url","http://ci.kbase.us/services/shock-api", "--handle_service_url","https://ci.kbase.us/services/handle_service");
+    my @cmd = ("/kb/deployment/bin/trns_transform_Genbank_Genome_to_KBaseGenomes_Genome",
+               "--shock_service_url", determine_relevant_shock_url($self),
+               "--workspace_service_url", $self->{'workspace-url'},
+               "--workspace_name", $workspace,
+               "--object_name", $genome_id,
+               "--contigset_object_name", $contig_id,
+               "--input_directory",$file_path,
+               "--working_directory", "/kb/module/work/tmp/Genomes");
+    my $rc = system_and_check( join( " ", @cmd ) );
+    #system ("/kb/deployment/bin/trns_transform_Genbank_Genome_to_KBaseGenomes_Genome  --shock_service_url  https://ci.kbase.us/services/shock-api --workspace_service_url https://appdev.kbase.us/services/ws --workspace_name $workspace  --object_name $genome_id   --contigset_object_name  $contig_id --input_directory $file_path  --working_directory /kb/module/work/tmp/Genomes");
+    #my $cmd = q{/kb/deployment/bin/trns_transform_Genbank_Genome_to_KBaseGenomes_Genome  --shock_service_url  https://ci.kbase.us/services/shock-api --workspace_service_url https://ci.kbase.us/services/ws --workspace_name $workspace  --object_name $genome_id   --contigset_object_name  $contig_id --input_directory $file_path  --working_directory /kb/module/work/tmp/Genomes};
+    #system $cmd;
+    #################################
+
+    #$return = {'file path input hash' => $genome_id};
+    $return = $genome_id;
+
+    #END narrative_genbank_to_genome
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to narrative_genbank_to_genome:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'narrative_genbank_to_genome');
     }
     return($return);
 }
@@ -1436,7 +1563,7 @@ sub rna_sample_set
 
 
 
-=head2 status 
+=head2 status
 
   $return = $obj->status()
 
@@ -2215,6 +2342,42 @@ html_link has a value which is a genome_transform.object_id
 
 a reference to a hash where the following keys are defined:
 genbank_shock_ref has a value which is a genome_transform.shock_ref
+genbank_file_path has a value which is a genome_transform.file_path
+workspace has a value which is a genome_transform.workspace_id
+genome_id has a value which is a genome_transform.object_id
+html_link has a value which is a genome_transform.object_id
+
+
+=end text
+
+=back
+
+
+
+=head2 narrativeGenbank_to_genome_params
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+genbank_file_path has a value which is a genome_transform.file_path
+workspace has a value which is a genome_transform.workspace_id
+genome_id has a value which is a genome_transform.object_id
+html_link has a value which is a genome_transform.object_id
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
 genbank_file_path has a value which is a genome_transform.file_path
 workspace has a value which is a genome_transform.workspace_id
 genome_id has a value which is a genome_transform.object_id

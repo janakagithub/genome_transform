@@ -11,24 +11,41 @@
         "output": "kbaseGenomeView"
     },
     "parameters": [
-        {
-            "id" : "genbank_file_path",
-            "optional" : false,
-            "advanced" : false,
-            "allow_multiple" : false,
-            "default_values" : [ "" ],
-            "field_type" : "textsubdata",
-            "textsubdata_options" : {
-              "subdata_selection": {
-                "service_function": "ftp_service.list_files",
-                "service_version": "dev",
-                "parameter_id" : "genbank_file",
-                "subdata_included" : ["data/col_ids"],
-                "path_to_subdata": ["data","col_ids"]
-              },
-              "multiselection":false,
-              "show_src_obj":false,
-              "allow_custom":false
+       {
+            "id": "genbank_file_path",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "Klebsiella oxytoca" ],
+            "field_type": "dropdown",
+            "dropdown_options": {
+                "options": [
+                    {
+                      "value": "Lactobacillus_brevis_ATCC_367.gbk",
+                      "display": "Lactobacillus brevis ATCC 367",
+                      "id": "Lactobacillus_brevis_ATCC_367.gbk",
+                      "ui_name": "Lactobacillus brevis ATCC 367"
+                    },
+                    {
+                      "value": "Helicobacter_pylori.gbk",
+                      "display": "Helicobacter pylori",
+                      "id": "'Helicobacter_pylori.gbk",
+                      "ui_name": "Helicobacter pylori"
+                    },
+                    {
+                      "value": "Bacillus_licheniformis.gbk",
+                      "display": "Bacillus licheniformis",
+                      "id": "Bacillus_licheniformis.gbk",
+                      "ui_name": "Bacillus licheniformis"
+                    },
+                    {
+                      "value": "Klebsiella_oxytoca.gbk",
+                      "display": "Klebsiella oxytoca",
+                      "id": "Klebsiella_oxytoca.gbk",
+                      "ui_name": "Klebsiella oxytoca"
+                    }
+                ]
+
             }
         },
         {
@@ -61,7 +78,7 @@
         "service-mapping": {
             "url": "",
             "name": "genome_transform",
-            "method": "genbank_to_genome",
+            "method": "narrative_genbank_to_genome",
             "input_mapping": [
                 {
                     "narrative_system_variable": "workspace",
