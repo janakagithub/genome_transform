@@ -417,7 +417,7 @@ sub genbank_to_genome
     else{
         mkpath([$tmpDir], 1);
         mkpath([$expDir], 1);
-        print "creating a temp/expDir direcotory for data processing, continuing..\n";
+        print "creating a temp/Genomes direcotory for data processing, continuing..\n";
     }
 
     $file_path = decompress_if_needed( $file_path );
@@ -526,7 +526,7 @@ sub narrative_genbank_to_genome
 
     print &Dumper ($narrativeGenbank_to_genome_params);
 
-    my $file_path = "/data/bulk/$ctx->{user_id}/$narrativeGenbank_to_genome_params->{genbank_file_path}";
+    my $file_path = '/data/bulk/'.$ctx->{user_id}.'/'.$narrativeGenbank_to_genome_params->{genbank_file_path};
     my $workspace = $narrativeGenbank_to_genome_params->{workspace};
     my $genome_id = $narrativeGenbank_to_genome_params->{genome_id};
     my $contig_id = $narrativeGenbank_to_genome_params->{contigset_id};
@@ -543,7 +543,7 @@ sub narrative_genbank_to_genome
     else{
         mkpath([$tmpDir], 1);
         mkpath([$expDir], 1);
-        print "creating a temp/expDir direcotory for data processing, continuing..\n";
+        print "creating a temp/Genomes direcotory for data processing, continuing..\n";
     }
 
 
