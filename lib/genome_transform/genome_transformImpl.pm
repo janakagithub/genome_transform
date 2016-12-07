@@ -564,8 +564,11 @@ sub narrative_genbank_to_genome
       print OUTFILE $genome_out;
       $file_path = $genomeDir.'/'.$genome_id.'.gbk';
     }
+    elsif ($narrativeGenbank_to_genome_params->{genbank_file_path} eq 'ftp_url' && !defined ($narrativeGenbank_to_genome_params->{html_link})){
+       die "FTP URL is not defined, terminating..\n";
+    }
     else{
-      die "FTP URL is not defined, terminating..\n";
+      print "continuing using genome file $narrativeGenbank_to_genome_params->{genbank_file_path}\n";
     }
 
     $file_path = decompress_if_needed($file_path);
