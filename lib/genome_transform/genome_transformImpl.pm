@@ -541,12 +541,11 @@ sub narrative_genbank_to_genome
     my $html_link = $narrativeGenbank_to_genome_params->{html_link};
     my $contig_id = $genome_id."_Contig";
 
-    #my $genome_out = curl_genome($html_link);
-
     $genome_id = $genome_id."";
-    print "file-path  $file_path\n\n";
+    #print "file-path  $file_path\n\n";
     my $tmpDir = "/kb/module/work/tmp";
     my $expDir = "/kb/module/work/tmp/Genomes";
+    my $genomeDir = "/kb/module/work/tmp/GenomesDir";
 
     if (-d $expDir){
         print "temp/Genome directory exists, continuing..\n";
@@ -554,14 +553,23 @@ sub narrative_genbank_to_genome
     else{
         mkpath([$tmpDir], 1);
         mkpath([$expDir], 1);
+        mkpath([$genomeDir], 1);
         print "creating a temp/Genomes direcotory for data processing, continuing..\n";
     }
 
 
-    #$file_path = decompress_if_needed( $file_path );
-    ################################
+    if ($narrativeGenbank_to_genome_params->{genbank_file_path} eq 'ftp_url' && defined ($narrativeGenbank_to_genome_params->{html_link})){
+      my $genome_out = curl_genome($html_link);
+      open OUTFILE, ">".$genomeDir."/".$genome_id.".gbk" or die "Couldn't write the expression file : $!";
+      print OUTFILE $genome_out;
+      $file_path = $genomeDir.'/'.$genome_id.'.gbk';
+    }
+    else{
+      die "FTP URL is not defined, terminating..\n";
+    }
 
-    #my @cmd = ("/kb/deployment/bin/trns_transform_seqs_to_KBaseAssembly_type", "-t", $reads_type, "-f","/data/bulktest/data/bulktest/janakakbase/reads/frag_1.fastq", "-f","/data/bulktest/data/bulktest/janakakbase/reads/frag_2.fastq", "-o","/kb/module/work/tmp/Genomes/pereads.json", "--shock_service_url","http://ci.kbase.us/services/shock-api", "--handle_service_url","https://ci.kbase.us/services/handle_service");
+    $file_path = decompress_if_needed($file_path);
+    ################################
     my @cmd = ("/kb/deployment/bin/trns_transform_Genbank_Genome_to_KBaseGenomes_Genome",
                "--shock_service_url", determine_relevant_shock_url($self),
                "--workspace_service_url", $self->{'workspace-url'},
@@ -571,9 +579,6 @@ sub narrative_genbank_to_genome
                "--input_directory",$file_path,
                "--working_directory", "/kb/module/work/tmp/Genomes");
     my $rc = system_and_check( join( " ", @cmd ) );
-    #system ("/kb/deployment/bin/trns_transform_Genbank_Genome_to_KBaseGenomes_Genome  --shock_service_url  https://ci.kbase.us/services/shock-api --workspace_service_url https://appdev.kbase.us/services/ws --workspace_name $workspace  --object_name $genome_id   --contigset_object_name  $contig_id --input_directory $file_path  --working_directory /kb/module/work/tmp/Genomes");
-    #my $cmd = q{/kb/deployment/bin/trns_transform_Genbank_Genome_to_KBaseGenomes_Genome  --shock_service_url  https://ci.kbase.us/services/shock-api --workspace_service_url https://ci.kbase.us/services/ws --workspace_name $workspace  --object_name $genome_id   --contigset_object_name  $contig_id --input_directory $file_path  --working_directory /kb/module/work/tmp/Genomes};
-    #system $cmd;
     #################################
 
     #$return = {'file path input hash' => $genome_id};

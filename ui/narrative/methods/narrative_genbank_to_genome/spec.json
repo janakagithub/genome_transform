@@ -43,6 +43,12 @@
                       "display": "Klebsiella oxytoca",
                       "id": "Klebsiella_oxytoca.gbk",
                       "ui_name": "Klebsiella oxytoca"
+                    },
+                    {
+                      "value": "ftp_url",
+                      "display": "Upload from FTP URL",
+                      "id": "ftp_url",
+                      "ui_name": "Upload from FTP URL"
                     }
                 ]
 
@@ -53,7 +59,7 @@
             "optional" : true,
             "advanced" : false,
             "allow_multiple" : false,
-            "default_values" : [ "" ],
+            "default_values" : [ "ftp://ftp.ncbi.nlm.nih.gov/genomes/archive/old_refseq/Bacteria/Escherichia_coli_K_12_substr__MG1655_uid57779/NC_000913.gbk" ],
             "field_type" : "text",
             "text_options" : {
                 "valid_ws_types" : [ ],

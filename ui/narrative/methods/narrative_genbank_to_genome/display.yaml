@@ -34,8 +34,8 @@ parameters :
         ui-name : Name or id of the Genome
         short-hint : Name or id of the genome that will be saved in KBase Narrative
     html_link:
-        ui-name : Optional html link for uploading a genome
-        short-hint : Optional html link for uploading a genome from public html space
+        ui-name : Optional ftp link for uploading a genome
+        short-hint : Optional ftp link for uploading a genome from public ftp space
 
 description : |
     <p>This method upload GenBank files from users ftp space into the narrative workspace.</p>
