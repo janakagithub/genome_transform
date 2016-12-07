@@ -287,7 +287,16 @@ sub  determine_relevant_shock_url
     return( $shock_url );
    }
 
-
+sub curl_genome {
+    my ($file_link) = @_ ;
+    my $cmd   = 'curl --connect-timeout 100 -si ';
+    $cmd     .= $file_link;
+    my ($head, $body)  = split( m{\r?\n\r?\n}, `$cmd`) or die "Connection timed out retreving Genome:\n";
+    my ($code) = $head =~m{\A\S+ (\d+)};
+    #$code == 200 or die "Error retreving data from nodejs service: Return code $code \n".$body."\n";
+    #my $json  = decode_json($head);
+    return $head;
+}
 
 #END_HEADER
 
@@ -526,13 +535,15 @@ sub narrative_genbank_to_genome
 
     print &Dumper ($narrativeGenbank_to_genome_params);
 
-    my $file_path = '/data/bulk/'.$ctx->{user_id}.'/'.$narrativeGenbank_to_genome_params->{genbank_file_path};
+    my $file_path = "/data/bulk/".$ctx->{user_id}."/".$narrativeGenbank_to_genome_params->{genbank_file_path};
     my $workspace = $narrativeGenbank_to_genome_params->{workspace};
     my $genome_id = $narrativeGenbank_to_genome_params->{genome_id};
-    my $contig_id = $narrativeGenbank_to_genome_params->{contigset_id};
+    my $html_link = $narrativeGenbank_to_genome_params->{html_link};
+    my $contig_id = $genome_id."_Contig";
 
-        $genome_id = $genome_id."";
+    #my $genome_out = curl_genome($html_link);
 
+    $genome_id = $genome_id."";
     print "file-path  $file_path\n\n";
     my $tmpDir = "/kb/module/work/tmp";
     my $expDir = "/kb/module/work/tmp/Genomes";
@@ -547,7 +558,7 @@ sub narrative_genbank_to_genome
     }
 
 
-    $file_path = decompress_if_needed( $file_path );
+    #$file_path = decompress_if_needed( $file_path );
     ################################
 
     #my @cmd = ("/kb/deployment/bin/trns_transform_seqs_to_KBaseAssembly_type", "-t", $reads_type, "-f","/data/bulktest/data/bulktest/janakakbase/reads/frag_1.fastq", "-f","/data/bulktest/data/bulktest/janakakbase/reads/frag_2.fastq", "-o","/kb/module/work/tmp/Genomes/pereads.json", "--shock_service_url","http://ci.kbase.us/services/shock-api", "--handle_service_url","https://ci.kbase.us/services/handle_service");
