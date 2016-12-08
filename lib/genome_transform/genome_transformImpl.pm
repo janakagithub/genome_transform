@@ -532,7 +532,6 @@ sub narrative_genbank_to_genome
     my $ctx = $genome_transform::genome_transformServer::CallContext;
     my($return);
     #BEGIN narrative_genbank_to_genome
-
     print &Dumper ($narrativeGenbank_to_genome_params);
 
     my $file_path = "/data/bulk/".$ctx->{user_id}."/".$narrativeGenbank_to_genome_params->{genbank_file_path};
@@ -557,7 +556,6 @@ sub narrative_genbank_to_genome
         print "creating a temp/Genomes direcotory for data processing, continuing..\n";
     }
 
-
     if ($narrativeGenbank_to_genome_params->{genbank_file_path} eq 'ftp_url' && defined ($narrativeGenbank_to_genome_params->{html_link})){
       my $genome_out = curl_genome($html_link);
       open OUTFILE, ">".$genomeDir."/".$genome_id.".gbk" or die "Couldn't write the expression file : $!";
@@ -565,7 +563,7 @@ sub narrative_genbank_to_genome
       $file_path = $genomeDir.'/'.$genome_id.'.gbk';
     }
     elsif ($narrativeGenbank_to_genome_params->{genbank_file_path} eq 'ftp_url' && !defined ($narrativeGenbank_to_genome_params->{html_link})){
-       die "FTP URL is not defined, terminating..\n";
+      die "FTP URL is not defined, terminating..\n";
     }
     else{
       print "continuing using genome file $narrativeGenbank_to_genome_params->{genbank_file_path}\n";
@@ -583,7 +581,6 @@ sub narrative_genbank_to_genome
                "--working_directory", "/kb/module/work/tmp/Genomes");
     my $rc = system_and_check( join( " ", @cmd ) );
     #################################
-
     #$return = {'file path input hash' => $genome_id};
     $return = $genome_id;
 
@@ -591,8 +588,8 @@ sub narrative_genbank_to_genome
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
     if (@_bad_returns) {
-	my $msg = "Invalid returns passed to narrative_genbank_to_genome:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+	   my $msg = "Invalid returns passed to narrative_genbank_to_genome:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	   Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'narrative_genbank_to_genome');
     }
     return($return);

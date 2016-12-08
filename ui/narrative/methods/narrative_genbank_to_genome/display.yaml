@@ -1,9 +1,9 @@
 #
 # define display information
 #
-name: GenBank Genome Upload
+name: Load GenBank Genomes
 tooltip: |
-    Transform GenBank genome files into KBase genome objects
+    Load GenBank genomes into the Narrative from FTP file space
 screenshots: []
 
 icon: icon.png
@@ -31,11 +31,11 @@ parameters :
         ui-name : GenBank Genome File
         short-hint : Selected GenBank file
     genome_id:
-        ui-name : Name or id of the Genome
+        ui-name : Name of the Genome to be saved
         short-hint : Name or id of the genome that will be saved in KBase Narrative
     html_link:
-        ui-name : Optional ftp link for uploading a genome
-        short-hint : Optional ftp link for uploading a genome from public ftp space
+        ui-name : Optional public ftp link for uploading GenBank genomes
+        short-hint : Optional public ftp link for uploading a genomes in .gbk format
 
 description : |
     <p>This method upload GenBank files from users ftp space into the narrative workspace.</p>
