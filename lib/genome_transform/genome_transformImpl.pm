@@ -1472,14 +1472,16 @@ sub rna_sample_set
     my $provenance=$ctx->provenance;
     my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
 
-    print "starting creating rna_sample_set method..\n";
+    print "starting creating a RNA sample set....\n";
 
     my @sample_refs;
     my @sample_conditions;
     my $num_samples=0;
     my $num_replicates=0;
 
-    foreach my $r (@{$rna_sample_set_params->{rnaSeqSample}}){
+    print &Dumper ($rna_sample_set_params);
+
+    foreach my $r (@{$rna_sample_set_params->{rnaSeqMeta}}){
 
       print "now uploading $r->{reads_id} \n";
 
@@ -1541,7 +1543,6 @@ sub rna_sample_set
         platform => 'illumina'
 
       };
-
 
       print "\n saving the Rna-Seq sampleSet to the narrative - $rna_sample_set_params->{workspace}\n ";
       my $obj_info_list = undef;

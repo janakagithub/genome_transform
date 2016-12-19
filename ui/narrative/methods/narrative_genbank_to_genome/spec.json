@@ -5,7 +5,7 @@
     ],
     "contact": "help@kbase.us",
     "visible": false,
-    "categories": ["active","upload"],
+    "categories": ["upload"],
     "widgets": {
         "input": null,
         "output": "kbaseGenomeView"
