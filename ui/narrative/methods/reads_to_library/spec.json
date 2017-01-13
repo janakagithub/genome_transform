@@ -1,0 +1,135 @@
+{   "ver": "1.0.0",
+
+    "authors": [
+        "janaka"
+    ],
+    "contact": "help@kbase.us",
+    "visible": false,
+    "categories": ["inactive","upload"],
+    "widgets": {
+        "input": null,
+        "output": "kbaseReportView"
+    },
+    "parameters": [
+        {
+            "id" : "file_path_list",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : true,
+            "default_values" : [ "/data/bulktest/data/bulktest/janakakbase/reads/frag_1.fastq" ],
+            "field_type" : "text",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id" : "name",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ "" ],
+            "field_type" : "text",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id" : "sequencing_tech",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ "" ],
+            "field_type" : "text",
+            "text_options" : {
+                "valid_ws_types" : ["KBaseFile.PairedEndLibrary"],
+                "is_output_name":true
+
+            }
+        },
+        {
+            "id" : "insert_size_mean",
+            "optional" : true,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ 300 ],
+            "field_type" : "float",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id" : "insert_size_std_dev",
+            "optional" : true,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ 60 ],
+            "field_type" : "float",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id" : "single_genome",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ 1],
+            "field_type" : "int",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        }
+    ],
+    "behavior": {
+        "service-mapping": {
+            "url": "",
+            "name": "genome_transform",
+            "method": "reads_to_library",
+            "input_mapping": [
+                {
+                    "narrative_system_variable": "wsid",
+                    "target_property": "wsid"
+                },
+                {
+                    "input_parameter": "name",
+                    "target_property": "name"
+                },
+                {
+                    "input_parameter": "file_path_list",
+                    "target_property": "file_path_list"
+                },
+                {
+                    "input_parameter": "single_genome",
+                    "target_property": "single_genome"
+                },
+                {
+                    "input_parameter": "insert_size_std_dev",
+                    "target_property": "insert_size_std_dev"
+                },
+                {
+                    "input_parameter": "insert_size_mean",
+                    "target_property": "insert_size_mean"
+                },
+                {
+                    "input_parameter": "sequencing_tech",
+                    "target_property": "sequencing_tech"
+                }
+            ],
+            "output_mapping": [
+                {
+                  "narrative_system_variable": "workspace",
+                  "target_property": "ws"
+                },
+                {
+                  "constant_value": "KBaseFile.PairedEndLibrary",
+                  "target_property": "type"
+                },
+                {
+                    "constant_value": "16",
+                    "target_property": "report_window_line_height"
+                }
+            ]
+        }
+    },
+    "job_id_output_field": "docker"
+}
