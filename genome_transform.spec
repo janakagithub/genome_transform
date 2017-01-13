@@ -2,7 +2,7 @@
 A KBase module: genome_transform
 This sample module contains one small method - filter_contigs.
 */
-
+#include <KBaseCommon.spec>
 module genome_transform {
 /*
 		URL to a shock node containing a data file for upload
@@ -70,6 +70,10 @@ module genome_transform {
 	*/
 	typedef float insert_size;
 
+	/*
+		Ref of the resulting object
+
+		typedef string object_ref;
 	/*
 		sequence type
 	*/
@@ -235,4 +239,39 @@ module genome_transform {
    funcdef sra_reads_to_assembly(reads_to_assembly_params) returns (object_id) authentication required;
 
    funcdef rna_sample_set(rna_sample_set_params) returns (object_id) authentication required;
+
+	 typedef structure {
+		/* forward and/or reverse reads*/
+		list <string> file_path_list;
+		string fwd_file;
+		string rev_file;
+
+			  /* one of the next two is required, in order to identify the target workspace for */
+        /* storing the resultant object                                                   */
+		string        wsname;
+        int           wsid;
+
+        /* one of the next two parameters is required to specify the object where the library */
+        /* will be stored.  Many of these are drawn from UploadReadsParams from ReadsUtils */
+		string        name;      /* for new object, or replacing existing object */
+        int           objid;        /* can be used if replacing an existing object */
+
+        /* this must be set if the input is a paired end library with reads in a single file */
+        int           interleaved;       /* 1 if paired ends are in a single fastq file (default 0) */
+
+
+        /* remaining parameters are optional, metadata for the resultant workspace object */
+        float         insert_size_mean;
+        float         insert_size_std_dev;              /* std of insert sizes */
+        int           read_orientation_outward;  /* 0 if inward pointing reads (defaul), 1 if outward */
+
+        string        sequencing_tech;
+        int           single_genome;        /* 1 if single genome, 0 if metagenome*/
+
+        KBaseCommon.StrainInfo   strain;    /* unable to find the KBaseCommon.spec file */
+        KBaseCommon.SourceInfo   source;
+
+	 } reads_to_library_params;
+
+	 funcdef reads_to_library(reads_to_library_params ) returns ( object_id ) authentication required;
 };
