@@ -240,38 +240,24 @@ module genome_transform {
 
    funcdef rna_sample_set(rna_sample_set_params) returns (object_id) authentication required;
 
-	 typedef structure {
-		/* forward and/or reverse reads*/
+   typedef structure {
 		list <string> file_path_list;
 		string fwd_file;
 		string rev_file;
-
-		/* one of the next two is required, in order to identify the target workspace for */
-        /* storing the resultant object                                                   */
-		string        wsname;
-        int           wsid;
-
-        /* one of the next two parameters is required to specify the object where the library */
-        /* will be stored.  Many of these are drawn from UploadReadsParams from ReadsUtils */
-		string        name;      /* for new object, or replacing existing object */
-        int           objid;        /* can be used if replacing an existing object */
-
-        /* this must be set if the input is a paired end library with reads in a single file */
-        int           interleaved;       /* 1 if paired ends are in a single fastq file (default 0) */
-
-
-        /* remaining parameters are optional, metadata for the resultant workspace object */
-        float         insert_size_mean;
-        float         insert_size_std_dev;              /* std of insert sizes */
-        int           read_orientation_outward;  /* 0 if inward pointing reads (defaul), 1 if outward */
-
-        string        sequencing_tech;
-        int           single_genome;        /* 1 if single genome, 0 if metagenome*/
-
-        KBaseCommon.StrainInfo   strain;    /* unable to find the KBaseCommon.spec file */
+		string wsname;
+        int wsid;
+		string name;
+        int objid;
+        int interleaved;
+        float insert_size_mean;
+        float insert_size_std_dev;
+        int read_orientation_outward;
+        string sequencing_tech;
+        int single_genome;
+        KBaseCommon.StrainInfo   strain;
         KBaseCommon.SourceInfo   source;
+   }reads_to_library_params;
 
-	 } reads_to_library_params;
+   funcdef reads_to_library(reads_to_library_params ) returns ( object_id ) authentication required;
 
-	 funcdef reads_to_library(reads_to_library_params ) returns ( object_id ) authentication required;
 };
