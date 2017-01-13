@@ -246,7 +246,7 @@ module genome_transform {
 		string fwd_file;
 		string rev_file;
 
-			  /* one of the next two is required, in order to identify the target workspace for */
+		/* one of the next two is required, in order to identify the target workspace for */
         /* storing the resultant object                                                   */
 		string        wsname;
         int           wsid;
