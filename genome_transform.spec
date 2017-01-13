@@ -258,6 +258,6 @@ module genome_transform {
         KBaseCommon.SourceInfo   source;
    }reads_to_library_params;
 
-   funcdef reads_to_library(reads_to_library_params ) returns ( object_id ) authentication required;
+   funcdef reads_to_library(reads_to_library_params) returns (object_id) authentication required;
 
 };
