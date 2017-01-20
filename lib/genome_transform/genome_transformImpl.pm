@@ -274,23 +274,11 @@ sub  convert_sra
     my ( $file, $type ) = @_;
 
     my $fileroot = $file;
-
-    #my @fn = split /\//, $fileroot;
     $fileroot =~ s/.sra$//;  # remove any .sra extension
-
-    #$fn =~ s/.sra/.fasta/;  # remove any .sra extension
-
-
-
-    #my @cmd = ("mv" , $)
-    print "file root is $fileroot\n";
-
     if ( $type eq 'SingleEndLibrary' )
        {
         my $outfile = basename( $fileroot ) . ".fastq";
-        print "outfile is $outfile file is $file";
         system_and_check( "$sra_convert_program  $file" );
-
         if ( -e $outfile )
            {return( ( $outfile ) ); }
         else
@@ -301,12 +289,9 @@ sub  convert_sra
     elsif ( $type eq 'PairedEndLibrary' )
        {
         my @outfiles = map( basename( $fileroot ). "_" . $_ . ".fastq", (1,2) );
-
-        print &Dumper (@outfiles);
         system_and_check( "$sra_convert_program --split-files $file" );
         #system_and_check( "$sra_convert_program --split-3 $file" );
         if ( -e $outfiles[0] && -e $outfiles[1] )
-
            {
             print &Dumper ($outfiles[0]);
             return( \@outfiles ); }
