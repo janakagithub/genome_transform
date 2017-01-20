@@ -2,10 +2,10 @@ package genome_transform::genome_transformImpl;
 use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
-# http://semver.org 
+# http://semver.org
 our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = '4ef392d249f801755d6768ad5cdf88dcd253bdde';
+our $GIT_COMMIT_HASH = '58c984ca06ff417005b39963c139ae34302c008c';
 
 =head1 NAME
 
@@ -259,19 +259,40 @@ sub  system_and_check
 
 my $sra_convert_program = "/kb/deployment/bin/fastq-dump";
 
+
+sub sra_converstion {
+
+  my ( $file, $outDir) = @_;
+  system_and_check( "$sra_convert_program --split-3 -T -O $outDir $file" );
+
+}
+
+
+
 sub  convert_sra
    {
     my ( $file, $type ) = @_;
 
     my $fileroot = $file;
+
+    #my @fn = split /\//, $fileroot;
     $fileroot =~ s/.sra$//;  # remove any .sra extension
+
+    #$fn =~ s/.sra/.fasta/;  # remove any .sra extension
+
+
+
+    #my @cmd = ("mv" , $)
+    print "file root is $fileroot\n";
 
     if ( $type eq 'SingleEndLibrary' )
        {
         my $outfile = basename( $fileroot ) . ".fastq";
-        system_and_check( "$sra_convert_program $file" );
+        print "outfile is $outfile file is $file";
+        system_and_check( "$sra_convert_program  $file" );
+
         if ( -e $outfile )
-           { return( ( $outfile ) ); }
+           {return( ( $outfile ) ); }
         else
            { # maybe try a few other tricks here before bailing
              die "did not file expected $outfile from $sra_convert_program\n";
@@ -280,9 +301,15 @@ sub  convert_sra
     elsif ( $type eq 'PairedEndLibrary' )
        {
         my @outfiles = map( basename( $fileroot ). "_" . $_ . ".fastq", (1,2) );
+
+        print &Dumper (@outfiles);
         system_and_check( "$sra_convert_program --split-files $file" );
+        #system_and_check( "$sra_convert_program --split-3 $file" );
         if ( -e $outfiles[0] && -e $outfiles[1] )
-           { return( @outfiles ); }
+
+           {
+            print &Dumper ($outfiles[0]);
+            return( \@outfiles ); }
         else
            { # maybe try a few other tricks here before bailing
              die "did not file expected @outfiles from $sra_convert_program\n";
@@ -1752,7 +1779,7 @@ sub reads_to_library
     my $ctx = $genome_transform::genome_transformServer::CallContext;
     my($return);
     #BEGIN reads_to_library
-    print "In method reads_to_library(), input params:\n";
+    print "starting  method reads_to_library(), input params are:\n";
     print Dumper( $reads_to_library_params );
 
     my $ReadsUtilsInit = new ReadsUtils::ReadsUtilsClient( $self->{'callbackURL'},
@@ -1760,10 +1787,6 @@ sub reads_to_library
                                                               'async_version' => 'dev',
                                                             )
                                                           );
-
-    print &Dumper ($reads_to_library_params);
-
-
     my $tmpDir = "/kb/module/work/tmp";
     my $rdDir = "/kb/module/work/tmp/Reads";
 
@@ -1775,49 +1798,55 @@ sub reads_to_library
 
         mkpath([$tmpDir], 1);
         mkpath([$rdDir], 1);
-        print "creating a temp/Genomes direcotory for data processing, continuing..\n";
+        print "creating a temp/Reads direcotory for data processing, continuing..\n";
     }
 
 
-    print "length of array  ". @{$reads_to_library_params->{file_path_list}}. "\n";
+    print "length of input file array  ". @{$reads_to_library_params->{file_path_list}}. "\n";
 
 
     if (defined $reads_to_library_params->{file_path_list} &&  (@{$reads_to_library_params->{file_path_list}} == 2)  ){
 
-          #my @cmd = ("cp",
-          #     $reads_to_library_params->{file_path_list}->[0],
-          #     $rdDir);
-          #my $rc = system_and_check( join( " ", @cmd ) );
-          #my @cmd = ("cp",
-          #     $reads_to_library_params->{file_path_list}->[1],
-          #     $rdDir);
-
-          #my $rc = system_and_check( join( " ", @cmd ) );
-
+          print "copying PE reads files to $rdDir\n";
+          my @cmd = ("cp",
+               $reads_to_library_params->{file_path_list}->[0],
+               $rdDir);
+          my $rc = system_and_check( join( " ", @cmd ) );
+          my @cmd = ("cp",
+               $reads_to_library_params->{file_path_list}->[1],
+               $rdDir);
+          my $rc = system_and_check( join( " ", @cmd ) );
 
           my @split_fw = split /\//, $reads_to_library_params->{file_path_list}->[0];
           my @split_rv = split /\//, $reads_to_library_params->{file_path_list}->[1];
+          #Naming the read object with original name
           $reads_to_library_params->{name} =  $split_fw[-1];
-          #my $localFw = $rdDir."/".$split_fw[-1];
-          #my $localRw = $rdDir."/".$split_fw[-1];
+          my $localFw = $rdDir."/".$split_fw[-1];
+          my $localRw = $rdDir."/".$split_rv[-1];
 
-          #$reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $localFw );
-          #$reads_to_library_params->{rev_file} = decompress_using_DFU( $self, $localRw );
+          $reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $localFw );
+          $reads_to_library_params->{rev_file} = decompress_using_DFU( $self, $localRw );
 
-          $reads_to_library_params->{fwd_file} = decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[0] );
-          $reads_to_library_params->{rev_file} = decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[1] );
+          #DFU cannot write to the staging area directly
+          #$reads_to_library_params->{fwd_file} = decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[0] );
+          #$reads_to_library_params->{rev_file} = decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[1] );
 
     }
     elsif (defined $reads_to_library_params->{file_path_list} &&  (@{$reads_to_library_params->{file_path_list}} == 1)  ){
-          #my @cmd = ("cp",
-          #     $reads_to_library_params->{file_path_list}->[0],
-          #     $rdDir);
-          #my $rc = system_and_check( join( " ", @cmd ) );
+          print "copying SE reads file to $rdDir\n";
+          my @cmd = ("cp",
+               $reads_to_library_params->{file_path_list}->[0],
+               $rdDir);
+          my $rc = system_and_check( join( " ", @cmd ) );
           my @split_fw = split /\//, $reads_to_library_params->{file_path_list}->[0];
+
+          #Naming the read object with original name
           $reads_to_library_params->{name} =  $split_fw[-1];
-          #my $localFw = $rdDir."/".$split_fw[-1];
-          #$reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $localFw );
-          $reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[0] );
+          my $localFw = $rdDir."/".$split_fw[-1];
+          $reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $localFw );
+
+          #DFU cannot write to the staging area directly
+          #$reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[0] );
     }
     else{
 
@@ -1827,8 +1856,11 @@ sub reads_to_library
 
     my $upload_ret;
     eval {
-    $upload_ret = $ReadsUtilsInit->upload_reads($reads_to_library_params );
-    print &Dumper ($upload_ret);
+      print "input params before submitting to ReadUtils\n";
+      print &Dumper ($reads_to_library_params);
+      my @cmd = ("ls -lh", '/kb/module/work/tmp/Reads');
+      system_and_check( join( " ", @cmd ) );
+      $upload_ret = $ReadsUtilsInit->upload_reads($reads_to_library_params );
     };
 
     if ($@){
@@ -1859,7 +1891,292 @@ sub reads_to_library
 
 
 
-=head2 status 
+=head2 sra_reads_to_library
+
+  $return = $obj->sra_reads_to_library($reads_to_library_params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.object_id
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+object_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.object_id
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+object_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub sra_reads_to_library
+{
+    my $self = shift;
+    my($reads_to_library_params) = @_;
+
+    my @_bad_arguments;
+    (ref($reads_to_library_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"reads_to_library_params\" (value was \"$reads_to_library_params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to sra_reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'sra_reads_to_library');
+    }
+
+    my $ctx = $genome_transform::genome_transformServer::CallContext;
+    my($return);
+    #BEGIN sra_reads_to_library
+    print "starting method sra_reads_to_library(), input params for this method:\n";
+    print Dumper( $reads_to_library_params );
+
+    my $ReadsUtilsInit = new ReadsUtils::ReadsUtilsClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'dev',
+                                                              'async_version' => 'dev',
+                                                            )
+                                                          );
+
+    my $tmpDir = "/kb/module/work/tmp";
+    my $rdDir = "/kb/module/work/tmp/Reads";
+    my $sDir = "/kb/module/work/tmp/sra";
+
+    if (-d $rdDir){
+
+        print "temp/Reads directory exists, continuing..\n";
+    }
+    else{
+
+        mkpath([$tmpDir], 1);
+        mkpath([$rdDir], 1);
+        mkpath([$sDir], 1);
+        print "creating a temp/Reads direcotory for data processing, continuing..\n";
+    }
+
+
+    print "length of the input file array  ". @{$reads_to_library_params->{file_path_list}}. "\n";
+
+
+    if (defined $reads_to_library_params->{file_path_list}) {
+
+          print "copying reads file into $rdDir \n";
+          my @cmd = ("cp",
+          $reads_to_library_params->{file_path_list}->[0],
+          $rdDir);
+          my $rc = system_and_check( join( " ", @cmd ) );
+
+          print "reads file copied..\n";
+          my @cmd = ("ls -lh", $rdDir);
+          system_and_check( join( " ", @cmd ) );
+
+          my @split_fw = split /\//, $reads_to_library_params->{file_path_list}->[0];
+          my $localFw = $rdDir."/".$split_fw[-1];
+          my $converted_file = $split_fw[-1];
+
+          #Naming the file with original file name
+          $reads_to_library_params->{name} = $split_fw[-1];
+          $converted_file =~ s/.sra$//;
+
+          my $decompressed = decompress_using_DFU($self, $localFw);
+          print "converting SRA reads using fast-dump ... will be saved in $sDir\n";
+          sra_converstion($localFw, $sDir);
+
+          my $sraOutDirSE = $sDir."/".$converted_file."/fastq";
+          my $sraOutDirPE = $sDir."/".$converted_file;
+
+          print "file/direcotory listing in output folder\n";
+
+
+          my @cmd = ("ls -lh", $sDir."/".$converted_file);
+          system_and_check( join( " ", @cmd ) );
+
+          if (-f $sraOutDirSE){
+
+            my $movedFile = $sraOutDirSE.".fastq";
+            #This needs to be changed in ReadUtils, we should not have to check for extension
+            print "file renamed with the extension .fastq, listing file\n";
+            my @cmd = ("mv", $sraOutDirSE ,  $movedFile  );
+            system_and_check( join( " ", @cmd ) );
+
+            my @cmd = ("ls -lh", $movedFile);
+            system_and_check( join( " ", @cmd ) );
+
+            print "Reads recognized as a SingleEnd, here is a glimpse of the file \n";
+            system_and_check("cat $movedFile | head");
+
+            $reads_to_library_params->{fwd_file} = $movedFile;
+
+
+          }
+          elsif (-d $sraOutDirPE){
+
+            print "listing direcotries generated from fastq-dump\n";
+            my @cmd = ("ls -lh", $sraOutDirPE);
+            system_and_check( join( " ", @cmd ) );
+
+            my $generatedPE1 = $sraOutDirPE."/1/fastq";
+            my $generatedPE2 = $sraOutDirPE."/2/fastq";
+            print "renaming files with .fastq extension \n";
+            my $movedPE1 = $generatedPE1.".fastq";
+            my $movedPE2 = $generatedPE2.".fastq";
+
+
+            my @cmd = ("mv", $generatedPE1 ,  $movedPE1  );
+            system_and_check( join( " ", @cmd ) );
+
+            my @cmd = ("mv", $generatedPE2 ,  $movedPE2  );
+            system_and_check( join( " ", @cmd ) );
+
+            print "here is a glimps of one of the PairedEnd reads \n";
+            system_and_check("cat $movedPE1 | head");
+
+            $reads_to_library_params->{fwd_file} = $movedPE1;
+            $reads_to_library_params->{rev_file} = $movedPE2;
+            #die;
+
+          }
+          else{
+
+              die "fast-dump did not convert sra files sucessfully, terminating..\n";
+          }
+
+
+     }
+     else{
+
+      die "reads file paths are not defined, terminating ...\n";
+
+     }
+
+    my $upload_ret;
+    eval {
+      print "input params before submitting to ReadUtils\n";
+      print &Dumper ($reads_to_library_params);
+      my @cmd = ("ls -lh", '/kb/module/work/tmp/sra');
+      system_and_check( join( " ", @cmd ) );
+      $upload_ret = $ReadsUtilsInit->upload_reads($reads_to_library_params);
+    };
+
+    if ($@){
+      print "Exception message: " . $@->{"message"} . "\n";
+      print "JSONRPC code: " . $@->{"code"} . "\n";
+      print "Method: " . $@->{"method_name"} . "\n";
+      print "Client-side exception:\n";
+      print $@;
+      print "Server-side exception:\n";
+      print $@->{"data"};
+      die $@;
+    }
+
+    print "$reads_to_library_params->{name} is saved ! Leaving method sra_reads_to_library\n";
+
+    return $upload_ret->{obj_ref};
+    #END sra_reads_to_library
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to sra_reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'sra_reads_to_library');
+    }
+    return($return);
+}
+
+
+
+
+=head2 status
 
   $return = $obj->status()
 

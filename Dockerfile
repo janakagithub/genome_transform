@@ -7,6 +7,7 @@ MAINTAINER KBase Developer
 
 # RUN apt-get update
 RUN cpanm -i Config::IniFiles
+RUN apt-get -y install nano
 
 # Build transform
 RUN cd /kb/dev_container/modules && \

@@ -1,9 +1,9 @@
 #
 # define display information
 #
-name: Reads to Library
+name: SRA Reads to Library
 tooltip: |
-    upload of non-sra Reads
+    SRA reads Upload
 screenshots: []
 
 icon: icon.png

@@ -254,10 +254,12 @@ module genome_transform {
         int read_orientation_outward;
         string sequencing_tech;
         int single_genome;
-        KBaseCommon.StrainInfo   strain;
-        KBaseCommon.SourceInfo   source;
+        KBaseCommon.StrainInfo strain;
+        KBaseCommon.SourceInfo source;
    }reads_to_library_params;
 
    funcdef reads_to_library(reads_to_library_params) returns (object_id) authentication required;
+
+   funcdef sra_reads_to_library(reads_to_library_params) returns (object_id) authentication required;
 
 };
