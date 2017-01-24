@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org
 our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = '58c984ca06ff417005b39963c139ae34302c008c';
+our $GIT_COMMIT_HASH = 'b6551dcffa8bd13be6f1812957e3bd1f50650f79';
 
 =head1 NAME
 
@@ -36,6 +36,7 @@ use HTTP::Request;     # these two used for direct shock url from
 use LWP::UserAgent;    # 302 redirect
 use ReadsUtils::ReadsUtilsClient;
 use DataFileUtil::DataFileUtilClient;
+use GenomeFileUtil::GenomeFileUtilClient;
 
 binmode STDOUT, ":utf8";
 
@@ -647,6 +648,178 @@ sub narrative_genbank_to_genome
 	my $msg = "Invalid returns passed to narrative_genbank_to_genome:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'narrative_genbank_to_genome');
+    }
+    return($return);
+}
+
+
+
+
+=head2 genbank_to_genome_GFU
+
+  $return = $obj->genbank_to_genome_GFU($genomeFileUtilInput)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$genomeFileUtilInput is a genome_transform.genomeFileUtilInput
+$return is a genome_transform.object_id
+genomeFileUtilInput is a reference to a hash where the following keys are defined:
+	file has a value which is a genome_transform.File
+	genome_name has a value which is a string
+	workspace_name has a value which is a string
+	source has a value which is a string
+	taxon_wsname has a value which is a string
+	taxon_reference has a value which is a string
+	release has a value which is a string
+	generate_ids_if_needed has a value which is a string
+	genetic_code has a value which is an int
+	type has a value which is a string
+	metadata has a value which is a genome_transform.usermeta
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	ftp_url has a value which is a string
+usermeta is a reference to a hash where the key is a string and the value is a string
+object_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$genomeFileUtilInput is a genome_transform.genomeFileUtilInput
+$return is a genome_transform.object_id
+genomeFileUtilInput is a reference to a hash where the following keys are defined:
+	file has a value which is a genome_transform.File
+	genome_name has a value which is a string
+	workspace_name has a value which is a string
+	source has a value which is a string
+	taxon_wsname has a value which is a string
+	taxon_reference has a value which is a string
+	release has a value which is a string
+	generate_ids_if_needed has a value which is a string
+	genetic_code has a value which is an int
+	type has a value which is a string
+	metadata has a value which is a genome_transform.usermeta
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	ftp_url has a value which is a string
+usermeta is a reference to a hash where the key is a string and the value is a string
+object_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub genbank_to_genome_GFU
+{
+    my $self = shift;
+    my($genomeFileUtilInput) = @_;
+
+    my @_bad_arguments;
+    (ref($genomeFileUtilInput) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"genomeFileUtilInput\" (value was \"$genomeFileUtilInput\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to genbank_to_genome_GFU:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'genbank_to_genome_GFU');
+    }
+
+    my $ctx = $genome_transform::genome_transformServer::CallContext;
+    my($return);
+    #BEGIN genbank_to_genome_GFU
+    print "starting  genbank_to_genome_GFU(), input params are:\n";
+    print Dumper( $genomeFileUtilInput );
+
+    my $GFU = new GenomeFileUtil::GenomeFileUtilClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'dev',
+                                                              'async_version' => 'dev',
+                                                            )
+                                                          );
+    my $tmpDir = "/kb/module/work/tmp";
+    my $rdDir = "/kb/module/work/tmp/Genome";
+
+    if (-d $rdDir){
+
+        print "temp/Reads directory exists, continuing..\n";
+    }
+    else{
+
+        mkpath([$tmpDir], 1);
+        mkpath([$rdDir], 1);
+        print "creating a temp/Genome direcotory for data processing, continuing..\n";
+    }
+
+
+    if (defined $genomeFileUtilInput->{file}->{path}){
+
+      print "copying Genome to reads files to $rdDir\n";
+      my @cmd = ("cp",
+         $genomeFileUtilInput->{file}->{path},
+         $rdDir);
+      my $rc = system_and_check( join( " ", @cmd ) );
+
+      my @split_name = split /\//, $genomeFileUtilInput->{file}->{path};
+
+      if (!defined $genomeFileUtilInput->{genome_name}){
+          $genomeFileUtilInput->{genome_name} = $split_name[-1];
+      }
+
+      my $localGenome = $rdDir."/".$split_name[-1];
+
+
+      $genomeFileUtilInput->{file}->{path} = decompress_using_DFU($self, $localGenome);
+
+    }
+
+
+    my $upload_ret;
+    eval {
+      print "input params before submitting to GenomeFileUtils\n";
+      print &Dumper ($genomeFileUtilInput);
+      my @cmd = ("ls -lh", '/kb/module/work/tmp/Genome');
+      system_and_check( join( " ", @cmd ) );
+      $upload_ret = $GFU->genbank_to_genome($genomeFileUtilInput);
+    };
+
+    if ($@){
+      print "Exception message: " . $@->{"message"} . "\n";
+      print "JSONRPC code: " . $@->{"code"} . "\n";
+      print "Method: " . $@->{"method_name"} . "\n";
+      print "Client-side exception:\n";
+      print $@;
+      print "Server-side exception:\n";
+      print $@->{"data"};
+      die $@;
+    }
+
+    my $genome_ref = $upload_ret->{genome_ref};
+    print &Dumper ($upload_ret);
+
+    return $genome_ref;
+
+    #END genbank_to_genome_GFU
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to genbank_to_genome_GFU:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'genbank_to_genome_GFU');
     }
     return($return);
 }
@@ -2984,6 +3157,133 @@ genbank_file_path has a value which is a genome_transform.file_path
 workspace has a value which is a genome_transform.workspace_id
 genome_id has a value which is a genome_transform.object_id
 html_link has a value which is a genome_transform.object_id
+
+
+=end text
+
+=back
+
+
+
+=head2 File
+
+=over 4
+
+
+
+=item Description
+
+genome_name - becomes the name of the object
+workspace_name - the name of the workspace it gets saved to.
+source - Source of the file typically something like RefSeq or Ensembl
+taxon_ws_name - where the reference taxons are : ReferenceTaxons
+    taxon_reference - if defined, will try to link the Genome to the specified
+taxonomy object insteas of performing the lookup during upload
+release - Release or version number of the data
+  per example Ensembl has numbered releases of all their data: Release 31
+generate_ids_if_needed - If field used for feature id is not there,
+  generate ids (default behavior is raising an exception)
+genetic_code - Genetic code of organism. Overwrites determined GC from
+  taxon object
+type - Reference, Representative or User upload
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+ftp_url has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+ftp_url has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 usermeta
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the key is a string and the value is a string
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the key is a string and the value is a string
+
+=end text
+
+=back
+
+
+
+=head2 genomeFileUtilInput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+file has a value which is a genome_transform.File
+genome_name has a value which is a string
+workspace_name has a value which is a string
+source has a value which is a string
+taxon_wsname has a value which is a string
+taxon_reference has a value which is a string
+release has a value which is a string
+generate_ids_if_needed has a value which is a string
+genetic_code has a value which is an int
+type has a value which is a string
+metadata has a value which is a genome_transform.usermeta
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+file has a value which is a genome_transform.File
+genome_name has a value which is a string
+workspace_name has a value which is a string
+source has a value which is a string
+taxon_wsname has a value which is a string
+taxon_reference has a value which is a string
+release has a value which is a string
+generate_ids_if_needed has a value which is a string
+genetic_code has a value which is an int
+type has a value which is a string
+metadata has a value which is a genome_transform.usermeta
 
 
 =end text

@@ -1,0 +1,90 @@
+{   "ver": "1.0.0",
+
+    "authors": [
+        "janaka"
+    ],
+    "contact": "help@kbase.us",
+    "visible": false,
+    "categories": ["inactive","upload"],
+    "widgets": {
+        "input": null,
+        "output": "kbaseReportView"
+    },
+    "parameters": [
+        {
+            "id" : "file",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [""],
+            "field_type" : "text",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id" : "source",
+            "optional" : true,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ 300 ],
+            "field_type" : "float",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id" : "genome_name",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ "" ],
+            "field_type" : "text",
+            "text_options" : {
+                "valid_ws_types" : ["KBaseGenomes.Genome"],
+                "is_output_name":true
+
+            }
+        }
+    ],
+    "behavior": {
+        "service-mapping": {
+            "url": "",
+            "name": "genome_transform",
+            "method": "genbank_to_genome_GFU",
+            "input_mapping": [
+                {
+                    "narrative_system_variable": "workspace_name",
+                    "target_property": "workspace_name"
+                },
+                {
+                    "input_parameter": "genome_name",
+                    "target_property": "genome_name"
+                },
+                {
+                    "input_parameter": "file",
+                    "target_property": "file"
+                },
+                {
+                    "input_parameter": "source",
+                    "target_property": "source"
+                }
+            ],
+            "output_mapping": [
+                {
+                  "narrative_system_variable": "workspace",
+                  "target_property": "ws"
+                },
+                {
+                  "constant_value": "KBaseGenomes.Genome",
+                  "target_property": "type"
+                },
+                {
+                    "constant_value": "16",
+                    "target_property": "report_window_line_height"
+                }
+            ]
+        }
+    },
+    "job_id_output_field": "docker"
+}
