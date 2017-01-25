@@ -8,7 +8,7 @@
     "categories": ["inactive","upload"],
     "widgets": {
         "input": null,
-        "output": "no-display"
+        "output": "kbaseReportView"
     },
     "parameters": [
         {
@@ -125,6 +125,7 @@
             "default_values" : [ ],
             "field_type" : "text",
             "text_options" : {
+                "valid_ws_types" : ["KBaseFile.SingleEndLibrary"],
                 "is_output_name":true
 
             }
@@ -134,7 +135,7 @@
         "service-mapping": {
             "url": "",
             "name": "genome_transform",
-            "method": "sra_reads_to_library",
+            "method": "reads_to_library",
             "input_mapping": [
                 {
                     "narrative_system_variable": "wsid",
@@ -173,6 +174,10 @@
                 {
                   "narrative_system_variable": "workspace",
                   "target_property": "ws"
+                },
+                {
+                  "constant_value": "KBaseFile.SingleEndLibrary",
+                  "target_property": "type"
                 },
                 {
                     "constant_value": "16",

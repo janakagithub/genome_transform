@@ -3,7 +3,7 @@
 #
 name: Load GenBank Genomes
 tooltip: |
-    Load GenBank genomes into the Narrative from FTP file space
+    Load GenBank genomes into the Narrative from staging area
 screenshots: []
 
 icon: icon.png
@@ -38,4 +38,4 @@ parameters :
         short-hint : Optional public ftp link for uploading a genomes in .gbk format
 
 description : |
-    <p>This method upload GenBank files from users ftp space into the narrative workspace.</p>
+    <p>This method upload GenBank files from staging area to the narrative.</p>

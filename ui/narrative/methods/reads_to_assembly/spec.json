@@ -16,7 +16,7 @@
             "optional" : false,
             "advanced" : false,
             "allow_multiple" : true,
-            "default_values" : [ "/data/bulktest/data/bulktest/janakakbase/reads/frag_1.fastq" ],
+            "default_values" : [ "" ],
             "field_type" : "text",
             "text_options" : {
                 "valid_ws_types" : [ ]
@@ -55,7 +55,7 @@
             "optional" : true,
             "advanced" : false,
             "allow_multiple" : false,
-            "default_values" : [ "300" ],
+            "default_values" : [  ],
             "field_type" : "text",
             "text_options" : {
                 "valid_ws_types" : [ ]
@@ -66,7 +66,7 @@
             "optional" : true,
             "advanced" : false,
             "allow_multiple" : false,
-            "default_values" : [ "60" ],
+            "default_values" : [ ],
             "field_type" : "text",
             "text_options" : {
                 "valid_ws_types" : [ ]

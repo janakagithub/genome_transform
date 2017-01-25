@@ -1,9 +1,9 @@
 #
 # define display information
 #
-name: Upload SRA Reads from Staging Area
+name: Upload SingleEnd Reads from Staging Area
 tooltip: |
-    Upload SRA Reads Reads from Staging Area
+    Upload SingleEnd Reads from Staging Area
 screenshots: []
 
 icon: icon.png
