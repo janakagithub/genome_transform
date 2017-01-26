@@ -86,8 +86,9 @@
             "advanced" : false,
             "allow_multiple" : false,
             "default_values" : [],
-            "field_type" : "float",
+            "field_type" : "text",
             "text_options" : {
+                "validate_as": "float",
                 "valid_ws_types" : [ ]
             }
         },
@@ -97,8 +98,9 @@
             "advanced" : false,
             "allow_multiple" : false,
             "default_values" : [],
-            "field_type" : "float",
+            "field_type" : "text",
             "text_options" : {
+                "validate_as": "float",
                 "valid_ws_types" : [ ]
             }
         },
