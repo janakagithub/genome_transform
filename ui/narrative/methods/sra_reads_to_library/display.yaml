@@ -3,7 +3,7 @@
 #
 name: Upload SRA Reads from Staging Area
 tooltip: |
-    Upload SRA Reads Reads from Staging Area
+    Upload SRA Reads from Staging Area
 screenshots: []
 
 icon: icon.png
@@ -34,11 +34,11 @@ parameters :
         ui-name : Name of the reads object to be saved
         short-hint : Name of the reads object to be saved
     sequencing_tech:
-        ui-name : sequencing_tech
-        short-hint : sequencing_tech
+        ui-name : Sequencing technology
+        short-hint : Sequencing technology used
     read_orientation_outward:
-        ui-name : read orientation outward
-        short-hint : read orientation outward
+        ui-name : Read orientation outward
+        short-hint : Read orientation outward or not
     insert_size_mean:
         ui-name : Insert size
         short-hint : Insert size
@@ -47,7 +47,7 @@ parameters :
         short-hint : Standard deviation
     single_genome:
         ui-name :  Reads belongs to a single genome
-        short-hint : Reads belongs to a single genome
+        short-hint : Reads belongs to a single genome or not
 
 description : |
     <p>This is a methods uploads a read set fasta or fastq into shock.</p>

@@ -154,7 +154,7 @@ module genome_transform {
     typedef mapping<string, string> usermeta;
    	typedef structure{
    		File file;
-
+   		string file_path;
         string genome_name;
         string workspace_name;
 

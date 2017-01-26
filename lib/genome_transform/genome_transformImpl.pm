@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org
 our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = '7f8dfd15bab8409e13976e524ab6b2982e87f506';
+our $GIT_COMMIT_HASH = '64818c1c0ce1ce7248d000c411f42199816b2cb6';
 
 =head1 NAME
 
@@ -670,6 +670,7 @@ $genomeFileUtilInput is a genome_transform.genomeFileUtilInput
 $return is a genome_transform.object_id
 genomeFileUtilInput is a reference to a hash where the following keys are defined:
 	file has a value which is a genome_transform.File
+	file_path has a value which is a string
 	genome_name has a value which is a string
 	workspace_name has a value which is a string
 	source has a value which is a string
@@ -697,6 +698,7 @@ $genomeFileUtilInput is a genome_transform.genomeFileUtilInput
 $return is a genome_transform.object_id
 genomeFileUtilInput is a reference to a hash where the following keys are defined:
 	file has a value which is a genome_transform.File
+	file_path has a value which is a string
 	genome_name has a value which is a string
 	workspace_name has a value which is a string
 	source has a value which is a string
@@ -766,7 +768,11 @@ sub genbank_to_genome_GFU
     }
 
 
-    if (defined $genomeFileUtilInput->{file}->{path}){
+    if (defined $genomeFileUtilInput->{file}->{path} || defined $genomeFileUtilInput->{file_path}){
+
+      if (defined $genomeFileUtilInput->{file_path}){
+        $genomeFileUtilInput->{file}->{path} = "/data/bulk/".$ctx->{user_id}."/".$genomeFileUtilInput->{file_path};
+      }
 
       print "copying Genome to reads files to $rdDir\n";
       my @cmd = ("cp",
@@ -3260,6 +3266,7 @@ a reference to a hash where the key is a string and the value is a string
 <pre>
 a reference to a hash where the following keys are defined:
 file has a value which is a genome_transform.File
+file_path has a value which is a string
 genome_name has a value which is a string
 workspace_name has a value which is a string
 source has a value which is a string
@@ -3279,6 +3286,7 @@ metadata has a value which is a genome_transform.usermeta
 
 a reference to a hash where the following keys are defined:
 file has a value which is a genome_transform.File
+file_path has a value which is a string
 genome_name has a value which is a string
 workspace_name has a value which is a string
 source has a value which is a string

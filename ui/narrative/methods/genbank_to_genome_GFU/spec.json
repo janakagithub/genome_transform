@@ -12,7 +12,7 @@
     },
     "parameters": [
         {
-            "id" : "file",
+            "id" : "file_path",
             "optional" : false,
             "advanced" : false,
             "allow_multiple" : false,
@@ -62,8 +62,8 @@
                     "target_property": "genome_name"
                 },
                 {
-                    "input_parameter": "file",
-                    "target_property": "file"
+                    "input_parameter": "file_path",
+                    "target_property": "file_path"
                 },
                 {
                     "input_parameter": "source",
