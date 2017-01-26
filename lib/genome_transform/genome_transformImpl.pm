@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org
 our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = 'b6551dcffa8bd13be6f1812957e3bd1f50650f79';
+our $GIT_COMMIT_HASH = '7f8dfd15bab8409e13976e524ab6b2982e87f506';
 
 =head1 NAME
 
@@ -1824,6 +1824,7 @@ $reads_to_library_params is a genome_transform.reads_to_library_params
 $return is a genome_transform.object_id
 reads_to_library_params is a reference to a hash where the following keys are defined:
 	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
 	fwd_file has a value which is a string
 	rev_file has a value which is a string
 	wsname has a value which is a string
@@ -1871,6 +1872,7 @@ $reads_to_library_params is a genome_transform.reads_to_library_params
 $return is a genome_transform.object_id
 reads_to_library_params is a reference to a hash where the following keys are defined:
 	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
 	fwd_file has a value which is a string
 	rev_file has a value which is a string
 	wsname has a value which is a string
@@ -2064,6 +2066,7 @@ $reads_to_library_params is a genome_transform.reads_to_library_params
 $return is a genome_transform.object_id
 reads_to_library_params is a reference to a hash where the following keys are defined:
 	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
 	fwd_file has a value which is a string
 	rev_file has a value which is a string
 	wsname has a value which is a string
@@ -2111,6 +2114,7 @@ $reads_to_library_params is a genome_transform.reads_to_library_params
 $return is a genome_transform.object_id
 reads_to_library_params is a reference to a hash where the following keys are defined:
 	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
 	fwd_file has a value which is a string
 	rev_file has a value which is a string
 	wsname has a value which is a string
@@ -2203,10 +2207,11 @@ sub sra_reads_to_library
     }
 
 
-    print "length of the input file array  ". @{$reads_to_library_params->{file_path_list}}. "\n";
+    if (defined $reads_to_library_params->{file_path_list} || defined $reads_to_library_params->{file_path}) {
 
-
-    if (defined $reads_to_library_params->{file_path_list}) {
+          if (defined $reads_to_library_params->{file_path}){
+            $reads_to_library_params->{file_path_list}->[0] = "/data/bulk/".$ctx->{user_id}."/".$reads_to_library_params->{file_path};
+          }
 
           print "copying reads file into $rdDir \n";
           my @cmd = ("cp",
@@ -3594,6 +3599,7 @@ rnaSeqSample has a value which is a reference to a list where each element is a 
 <pre>
 a reference to a hash where the following keys are defined:
 file_path_list has a value which is a reference to a list where each element is a string
+file_path has a value which is a string
 fwd_file has a value which is a string
 rev_file has a value which is a string
 wsname has a value which is a string
@@ -3617,6 +3623,7 @@ source has a value which is a KBaseCommon.SourceInfo
 
 a reference to a hash where the following keys are defined:
 file_path_list has a value which is a reference to a list where each element is a string
+file_path has a value which is a string
 fwd_file has a value which is a string
 rev_file has a value which is a string
 wsname has a value which is a string

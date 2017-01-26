@@ -12,7 +12,7 @@
     },
     "parameters": [
         {
-            "id" : "file_path_list",
+            "id" : "file_path",
             "optional" : false,
             "advanced" : false,
             "allow_multiple" : false,
@@ -147,8 +147,8 @@
                     "target_property": "name"
                 },
                 {
-                    "input_parameter": "file_path_list",
-                    "target_property": "file_path_list"
+                    "input_parameter": "file_path",
+                    "target_property": "file_path"
                 },
                 {
                     "input_parameter": "single_genome",

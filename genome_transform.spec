@@ -285,6 +285,7 @@ module genome_transform {
 
    typedef structure {
 		list <string> file_path_list;
+		string file_path;
 		string fwd_file;
 		string rev_file;
 		string wsname;

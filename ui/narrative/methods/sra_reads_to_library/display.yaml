@@ -27,12 +27,12 @@ suggestions:
 # Configure the display and description of parameters
 #
 parameters :
-    file_path_list:
-        ui-name : Paths to reads files
-        short-hint : Paths to reads files
+    file_path:
+        ui-name : SRA read file name
+        short-hint : SRA read file name
     name:
-        ui-name : Name of the reads object
-        short-hint : Name of the reads object
+        ui-name : Name of the reads object to be saved
+        short-hint : Name of the reads object to be saved
     sequencing_tech:
         ui-name : sequencing_tech
         short-hint : sequencing_tech
