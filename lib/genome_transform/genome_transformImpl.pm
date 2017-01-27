@@ -2356,7 +2356,7 @@ sub sra_reads_to_library
       ref=> $upload_ret->{obj_ref},
       description => "SRA reads upload"
 
-    }
+    };
     my $uid = UUID::Random::generate;
     my $report_context = {
       message => $reporter_string,
@@ -2385,6 +2385,7 @@ sub sra_reads_to_library
 
     print "Report is generated: name and the ref as follows\n";
     print &Dumper ($report_response);
+
     my $report_out = {
       report_name => $report_response->{name},
       report_ref => $report_response->{ref}
