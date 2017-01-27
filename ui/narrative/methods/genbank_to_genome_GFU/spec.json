@@ -8,7 +8,7 @@
     "categories": ["inactive","upload"],
     "widgets": {
         "input": null,
-        "output": "kbaseReportView"
+        "output": "kbaseGenomeView"
     },
     "parameters": [
         {
