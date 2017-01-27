@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org
 our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = '64818c1c0ce1ce7248d000c411f42199816b2cb6';
+our $GIT_COMMIT_HASH = 'cd6938912230c8cfaaf6d89c7e1bf9cd9a1c77d4';
 
 =head1 NAME
 
@@ -34,9 +34,11 @@ use File::MMagic;      # needs to be added to container via Dockerfile
 use File::Path;
 use HTTP::Request;     # these two used for direct shock url from
 use LWP::UserAgent;    # 302 redirect
+use UUID::Random;
 use ReadsUtils::ReadsUtilsClient;
 use DataFileUtil::DataFileUtilClient;
 use GenomeFileUtil::GenomeFileUtilClient;
+use KBaseReport::KBaseReportClient;
 
 binmode STDOUT, ":utf8";
 
@@ -2071,7 +2073,7 @@ sub reads_to_library
 
 <pre>
 $reads_to_library_params is a genome_transform.reads_to_library_params
-$return is a genome_transform.object_id
+$return is a genome_transform.sraReadsToLibraryOutput
 reads_to_library_params is a reference to a hash where the following keys are defined:
 	file_path_list has a value which is a reference to a list where each element is a string
 	file_path has a value which is a string
@@ -2110,7 +2112,9 @@ Location is a reference to a hash where the following keys are defined:
 	elevation has a value which is a float
 	date has a value which is a string
 	description has a value which is a string
-object_id is a string
+sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
+	name has a value which is a string
+	ref has a value which is a string
 
 </pre>
 
@@ -2119,7 +2123,7 @@ object_id is a string
 =begin text
 
 $reads_to_library_params is a genome_transform.reads_to_library_params
-$return is a genome_transform.object_id
+$return is a genome_transform.sraReadsToLibraryOutput
 reads_to_library_params is a reference to a hash where the following keys are defined:
 	file_path_list has a value which is a reference to a list where each element is a string
 	file_path has a value which is a string
@@ -2158,7 +2162,9 @@ Location is a reference to a hash where the following keys are defined:
 	elevation has a value which is a float
 	date has a value which is a string
 	description has a value which is a string
-object_id is a string
+sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
+	name has a value which is a string
+	ref has a value which is a string
 
 
 =end text
@@ -2197,7 +2203,11 @@ sub sra_reads_to_library
                                                               'async_version' => 'dev',
                                                             )
                                                           );
-    $reads_to_library_params->{wsname} = $reads_to_library_params->{workspace};
+    if (defined $reads_to_library_params->{workspace}){
+       $reads_to_library_params->{wsname} = $reads_to_library_params->{workspace};
+    }
+
+    my $readsType = "";
     my $tmpDir = "/kb/module/work/tmp";
     my $rdDir = "/kb/module/work/tmp/Reads";
     my $sDir = "/kb/module/work/tmp/sra";
@@ -2268,7 +2278,7 @@ sub sra_reads_to_library
 
             $reads_to_library_params->{fwd_file} = $movedFile;
 
-
+            $readsType = "SingleEnd Reads";
           }
           elsif (-d $sraOutDirPE){
 
@@ -2294,8 +2304,9 @@ sub sra_reads_to_library
 
             $reads_to_library_params->{fwd_file} = $movedPE1;
             $reads_to_library_params->{rev_file} = $movedPE2;
-            #die;
 
+            $readsType = "PairedEnd Reads";
+            #die;
           }
           else{
 
@@ -2310,7 +2321,7 @@ sub sra_reads_to_library
 
      }
 
-    my $upload_ret;
+    my $upload_ret; #->{obj_ref} = "7995/66/2";
     eval {
       print "input params before submitting to ReadUtils\n";
       print &Dumper ($reads_to_library_params);
@@ -2332,10 +2343,51 @@ sub sra_reads_to_library
 
     print "$reads_to_library_params->{name} is saved ! Leaving method sra_reads_to_library\n";
 
-    return $upload_ret->{obj_ref};
+    my $reporter_string = "SRA reads".$reads_to_library_params->{name}." sucessfully uloaded and saved with the reference ".$upload_ret->{obj_ref} .". It is identifed to be a". $readsType."readset";
+
+    print "$reporter_string\n";
+
+    my $reportHandle = new KBaseReport::KBaseReportClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
+                                                            )
+                                                          );
+
+    my $uid = UUID::Random::generate;
+    my $report_context = {
+      message => $reporter_string,
+      objects_created => [{ref=> $upload_ret->{obj_ref}, description => "SRA reads upload"}],
+      workspace_name => $reads_to_library_params->{wsname},
+      warnings => [],
+      html_links => [],
+      file_links =>[],
+      report_object_name => "Report".$reads_to_library_params->{name}."-".$uid
+    };
+
+    my $report_response;
+    eval {
+      $report_response = $reportHandle->create_extended_report($report_context);
+      print "reached here\n";
+    };
+
+    if ($@){
+      print "Exception message: " . $@->{"message"} . "\n";
+      print "JSONRPC code: " . $@->{"code"} . "\n";
+      print "Method: " . $@->{"method_name"} . "\n";
+      print "Client-side exception:\n";
+      print $@;
+      print "Server-side exception:\n";
+      print $@->{"data"};
+      die $@;
+    }
+
+    print "Report is generated: name and the ref as follows\n";
+    print &Dumper ($report_response);
+
+    return $report_response;
     #END sra_reads_to_library
     my @_bad_returns;
-    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
     if (@_bad_returns) {
 	my $msg = "Invalid returns passed to sra_reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_returns);
 	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
@@ -3648,6 +3700,38 @@ sequencing_tech has a value which is a string
 single_genome has a value which is an int
 strain has a value which is a KBaseCommon.StrainInfo
 source has a value which is a KBaseCommon.SourceInfo
+
+
+=end text
+
+=back
+
+
+
+=head2 sraReadsToLibraryOutput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+name has a value which is a string
+ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+name has a value which is a string
+ref has a value which is a string
 
 
 =end text
