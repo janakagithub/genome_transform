@@ -302,8 +302,13 @@ module genome_transform {
         KBaseCommon.SourceInfo source;
    }reads_to_library_params;
 
+     typedef structure {
+        string name;
+        string ref;
+	 }sraReadsToLibraryOutput;
+
    funcdef reads_to_library(reads_to_library_params) returns (object_id) authentication required;
 
-   funcdef sra_reads_to_library(reads_to_library_params) returns (object_id) authentication required;
+   funcdef sra_reads_to_library(reads_to_library_params) returns (sraReadsToLibraryOutput) authentication required;
 
 };
