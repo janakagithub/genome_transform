@@ -139,8 +139,8 @@
             "method": "sra_reads_to_library",
             "input_mapping": [
                 {
-                    "narrative_system_variable": "wsid",
-                    "target_property": "wsid"
+                    "narrative_system_variable": "workspace",
+                    "target_property": "workspace"
                 },
                 {
                     "input_parameter": "name",

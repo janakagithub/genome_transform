@@ -747,7 +747,7 @@ sub genbank_to_genome_GFU
     #BEGIN genbank_to_genome_GFU
     print "starting  genbank_to_genome_GFU(), input params are:\n";
     print Dumper( $genomeFileUtilInput );
-
+    $genomeFileUtilInput->{workspace_name} = $genomeFileUtilInput->{workspace};
     my $GFU = new GenomeFileUtil::GenomeFileUtilClient( $self->{'callbackURL'},
                                                             ( 'service_version' => 'dev',
                                                               'async_version' => 'dev',
@@ -2195,7 +2195,7 @@ sub sra_reads_to_library
                                                               'async_version' => 'dev',
                                                             )
                                                           );
-
+    $reads_to_library_params->{wsname} = $reads_to_library_params->{workspace};
     my $tmpDir = "/kb/module/work/tmp";
     my $rdDir = "/kb/module/work/tmp/Reads";
     my $sDir = "/kb/module/work/tmp/sra";

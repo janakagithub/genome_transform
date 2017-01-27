@@ -76,6 +76,37 @@ class genome_transform(object):
             'genome_transform.narrative_genbank_to_genome',
             [narrativeGenbank_to_genome_params], self._service_ver, context)
 
+    def genbank_to_genome_GFU(self, genomeFileUtilInput, context=None):
+        """
+        :param genomeFileUtilInput: instance of type "genomeFileUtilInput" ->
+           structure: parameter "file" of type "File" (genome_name - becomes
+           the name of the object workspace_name - the name of the workspace
+           it gets saved to. source - Source of the file typically something
+           like RefSeq or Ensembl taxon_ws_name - where the reference taxons
+           are : ReferenceTaxons taxon_reference - if defined, will try to
+           link the Genome to the specified taxonomy object insteas of
+           performing the lookup during upload release - Release or version
+           number of the data per example Ensembl has numbered releases of
+           all their data: Release 31 generate_ids_if_needed - If field used
+           for feature id is not there, generate ids (default behavior is
+           raising an exception) genetic_code - Genetic code of organism.
+           Overwrites determined GC from taxon object type - Reference,
+           Representative or User upload) -> structure: parameter "path" of
+           String, parameter "shock_id" of String, parameter "ftp_url" of
+           String, parameter "file_path" of String, parameter "genome_name"
+           of String, parameter "workspace_name" of String, parameter
+           "source" of String, parameter "taxon_wsname" of String, parameter
+           "taxon_reference" of String, parameter "release" of String,
+           parameter "generate_ids_if_needed" of String, parameter
+           "genetic_code" of Long, parameter "type" of String, parameter
+           "metadata" of type "usermeta" -> mapping from String to String
+        :returns: instance of type "object_id" (Name of an object in the
+           KBase workspace)
+        """
+        return self._client.call_method(
+            'genome_transform.genbank_to_genome_GFU',
+            [genomeFileUtilInput], self._service_ver, context)
+
     def fasta_to_contig(self, fasta_to_contig_params, context=None):
         """
         :param fasta_to_contig_params: instance of type
@@ -230,15 +261,16 @@ class genome_transform(object):
         """
         :param reads_to_library_params: instance of type
            "reads_to_library_params" -> structure: parameter "file_path_list"
-           of list of String, parameter "fwd_file" of String, parameter
-           "rev_file" of String, parameter "wsname" of String, parameter
-           "wsid" of Long, parameter "name" of String, parameter "objid" of
-           Long, parameter "interleaved" of Long, parameter
-           "insert_size_mean" of Double, parameter "insert_size_std_dev" of
-           Double, parameter "read_orientation_outward" of Long, parameter
-           "sequencing_tech" of String, parameter "single_genome" of Long,
-           parameter "strain" of type "StrainInfo" (Information about a
-           strain. genetic_code - the genetic code of the strain. See
+           of list of String, parameter "file_path" of String, parameter
+           "fwd_file" of String, parameter "rev_file" of String, parameter
+           "wsname" of String, parameter "wsid" of Long, parameter "name" of
+           String, parameter "objid" of Long, parameter "interleaved" of
+           Long, parameter "insert_size_mean" of Double, parameter
+           "insert_size_std_dev" of Double, parameter
+           "read_orientation_outward" of Long, parameter "sequencing_tech" of
+           String, parameter "single_genome" of Long, parameter "strain" of
+           type "StrainInfo" (Information about a strain. genetic_code - the
+           genetic code of the strain. See
            http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c
            genus - the genus of the strain species - the species of the
            strain strain - the identifier for the strain source - information
@@ -287,6 +319,70 @@ class genome_transform(object):
         """
         return self._client.call_method(
             'genome_transform.reads_to_library',
+            [reads_to_library_params], self._service_ver, context)
+
+    def sra_reads_to_library(self, reads_to_library_params, context=None):
+        """
+        :param reads_to_library_params: instance of type
+           "reads_to_library_params" -> structure: parameter "file_path_list"
+           of list of String, parameter "file_path" of String, parameter
+           "fwd_file" of String, parameter "rev_file" of String, parameter
+           "wsname" of String, parameter "wsid" of Long, parameter "name" of
+           String, parameter "objid" of Long, parameter "interleaved" of
+           Long, parameter "insert_size_mean" of Double, parameter
+           "insert_size_std_dev" of Double, parameter
+           "read_orientation_outward" of Long, parameter "sequencing_tech" of
+           String, parameter "single_genome" of Long, parameter "strain" of
+           type "StrainInfo" (Information about a strain. genetic_code - the
+           genetic code of the strain. See
+           http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi?mode=c
+           genus - the genus of the strain species - the species of the
+           strain strain - the identifier for the strain source - information
+           about the source of the strain organelle - the organelle of
+           interest for the related data (e.g. mitochondria) ncbi_taxid - the
+           NCBI taxonomy ID of the strain location - the location from which
+           the strain was collected @optional genetic_code source ncbi_taxid
+           organelle location) -> structure: parameter "genetic_code" of
+           Long, parameter "genus" of String, parameter "species" of String,
+           parameter "strain" of String, parameter "organelle" of String,
+           parameter "source" of type "SourceInfo" (Information about the
+           source of a piece of data. source - the name of the source (e.g.
+           NCBI, JGI, Swiss-Prot) source_id - the ID of the data at the
+           source project_id - the ID of a project encompassing the data at
+           the source @optional source source_id project_id) -> structure:
+           parameter "source" of String, parameter "source_id" of type
+           "source_id" (An ID used for a piece of data at its source. @id
+           external), parameter "project_id" of type "project_id" (An ID used
+           for a project encompassing a piece of data at its source. @id
+           external), parameter "ncbi_taxid" of Long, parameter "location" of
+           type "Location" (Information about a location. lat - latitude of
+           the site, recorded as a decimal number. North latitudes are
+           positive values and south latitudes are negative numbers. lon -
+           longitude of the site, recorded as a decimal number. West
+           longitudes are positive values and east longitudes are negative
+           numbers. elevation - elevation of the site, expressed in meters
+           above sea level. Negative values are allowed. date - date of an
+           event at this location (for example, sample collection), expressed
+           in the format YYYY-MM-DDThh:mm:ss.SSSZ description - a free text
+           description of the location and, if applicable, the associated
+           event. @optional date description) -> structure: parameter "lat"
+           of Double, parameter "lon" of Double, parameter "elevation" of
+           Double, parameter "date" of String, parameter "description" of
+           String, parameter "source" of type "SourceInfo" (Information about
+           the source of a piece of data. source - the name of the source
+           (e.g. NCBI, JGI, Swiss-Prot) source_id - the ID of the data at the
+           source project_id - the ID of a project encompassing the data at
+           the source @optional source source_id project_id) -> structure:
+           parameter "source" of String, parameter "source_id" of type
+           "source_id" (An ID used for a piece of data at its source. @id
+           external), parameter "project_id" of type "project_id" (An ID used
+           for a project encompassing a piece of data at its source. @id
+           external)
+        :returns: instance of type "object_id" (Name of an object in the
+           KBase workspace)
+        """
+        return self._client.call_method(
+            'genome_transform.sra_reads_to_library',
             [reads_to_library_params], self._service_ver, context)
 
     def status(self, context=None):

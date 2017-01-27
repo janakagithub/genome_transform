@@ -3,7 +3,7 @@
 #
 name: Load GenBank Genomes
 tooltip: |
-    Load GenBank genomes into the Narrative from FTP file space
+    Load GenBank Genomes from Staging Area
 screenshots: []
 
 icon: icon.png
