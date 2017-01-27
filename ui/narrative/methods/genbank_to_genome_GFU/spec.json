@@ -23,14 +23,34 @@
             }
         },
         {
-            "id" : "source",
-            "optional" : true,
-            "advanced" : false,
-            "allow_multiple" : false,
-            "default_values" : [ ],
-            "field_type" : "text",
-            "text_options" : {
-                "valid_ws_types" : [ ]
+            "id": "source",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "RefSeq" ],
+            "field_type": "dropdown",
+            "dropdown_options": {
+                "options": [
+                    {
+                      "value": "RefSeq",
+                      "display": "RefSeq",
+                      "id": "RefSeq",
+                      "ui_name": "RefSeq"
+                    },
+                    {
+                      "value": "Ensembl",
+                      "display": "Ensembl",
+                      "id": "Ensembl",
+                      "ui_name": "Ensembl"
+                    },
+                    {
+                      "value": "Other",
+                      "display": "Other",
+                      "id": "Other",
+                      "ui_name": "Other"
+                    }
+                ]
+
             }
         },
         {
