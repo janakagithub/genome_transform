@@ -5,7 +5,7 @@ use Bio::KBase::Exceptions;
 # http://semver.org
 our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = 'cd6938912230c8cfaaf6d89c7e1bf9cd9a1c77d4';
+our $GIT_COMMIT_HASH = '777ffefa0b3caaeb03b65f5b55a5ea78c9cde150';
 
 =head1 NAME
 
@@ -2113,8 +2113,8 @@ Location is a reference to a hash where the following keys are defined:
 	date has a value which is a string
 	description has a value which is a string
 sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
-	name has a value which is a string
-	ref has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 </pre>
 
@@ -2163,8 +2163,8 @@ Location is a reference to a hash where the following keys are defined:
 	date has a value which is a string
 	description has a value which is a string
 sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
-	name has a value which is a string
-	ref has a value which is a string
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 
 =end text
@@ -2352,11 +2352,15 @@ sub sra_reads_to_library
                                                               'async_version' => 'release',
                                                             )
                                                           );
+    my $objdata = {
+      ref=> $upload_ret->{obj_ref},
+      description => "SRA reads upload"
 
+    }
     my $uid = UUID::Random::generate;
     my $report_context = {
       message => $reporter_string,
-      objects_created => [{ref=> $upload_ret->{obj_ref}, description => "SRA reads upload"}],
+      objects_created => [$objdata],
       workspace_name => $reads_to_library_params->{wsname},
       warnings => [],
       html_links => [],
@@ -2367,9 +2371,7 @@ sub sra_reads_to_library
     my $report_response;
     eval {
       $report_response = $reportHandle->create_extended_report($report_context);
-      print "reached here\n";
     };
-
     if ($@){
       print "Exception message: " . $@->{"message"} . "\n";
       print "JSONRPC code: " . $@->{"code"} . "\n";
@@ -2383,8 +2385,12 @@ sub sra_reads_to_library
 
     print "Report is generated: name and the ref as follows\n";
     print &Dumper ($report_response);
+    my $report_out = {
+      report_name => $report_response->{name},
+      report_ref => $report_response->{ref}
 
-    return $report_response;
+    };
+    return $report_out;
     #END sra_reads_to_library
     my @_bad_returns;
     (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
@@ -3720,8 +3726,8 @@ source has a value which is a KBaseCommon.SourceInfo
 
 <pre>
 a reference to a hash where the following keys are defined:
-name has a value which is a string
-ref has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
 
 </pre>
 
@@ -3730,8 +3736,8 @@ ref has a value which is a string
 =begin text
 
 a reference to a hash where the following keys are defined:
-name has a value which is a string
-ref has a value which is a string
+report_name has a value which is a string
+report_ref has a value which is a string
 
 
 =end text

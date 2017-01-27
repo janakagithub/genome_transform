@@ -303,8 +303,8 @@ module genome_transform {
    }reads_to_library_params;
 
      typedef structure {
-        string name;
-        string ref;
+        string report_name;
+        string report_ref;
 	 }sraReadsToLibraryOutput;
 
    funcdef reads_to_library(reads_to_library_params) returns (object_id) authentication required;
