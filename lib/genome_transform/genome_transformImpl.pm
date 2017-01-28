@@ -818,6 +818,10 @@ sub genbank_to_genome_GFU
       die $@;
     }
 
+   ############Creting a Report######################
+
+   ##################################################
+
     my $genome_ref = $upload_ret->{genome_ref};
     print &Dumper ($upload_ret);
 
@@ -2343,7 +2347,7 @@ sub sra_reads_to_library
 
     print "$reads_to_library_params->{name} is saved ! Leaving method sra_reads_to_library\n";
 
-    my $reporter_string = "SRA reads".$reads_to_library_params->{name}." sucessfully uloaded and saved with the reference ".$upload_ret->{obj_ref} .". It is identifed to be a". $readsType."readset";
+    my $reporter_string = "SRA reads".$reads_to_library_params->{name}." sucessfully uploaded and saved with the reference ".$upload_ret->{obj_ref} .". It is identifed to be a". $readsType."readset";
 
     print "$reporter_string\n";
 
