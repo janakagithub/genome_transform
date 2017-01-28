@@ -2203,8 +2203,8 @@ sub sra_reads_to_library
     print Dumper( $reads_to_library_params );
 
     my $ReadsUtilsInit = new ReadsUtils::ReadsUtilsClient( $self->{'callbackURL'},
-                                                            ( 'service_version' => 'dev',
-                                                              'async_version' => 'dev',
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
                                                             )
                                                           );
     if (defined $reads_to_library_params->{workspace}){
@@ -2282,7 +2282,7 @@ sub sra_reads_to_library
 
             $reads_to_library_params->{fwd_file} = $movedFile;
 
-            $readsType = "SingleEnd Reads";
+            $readsType = "SingleEnd";
           }
           elsif (-d $sraOutDirPE){
 
@@ -2309,7 +2309,7 @@ sub sra_reads_to_library
             $reads_to_library_params->{fwd_file} = $movedPE1;
             $reads_to_library_params->{rev_file} = $movedPE2;
 
-            $readsType = "PairedEnd Reads";
+            $readsType = "PairedEnd";
             #die;
           }
           else{
@@ -2347,7 +2347,7 @@ sub sra_reads_to_library
 
     print "$reads_to_library_params->{name} is saved ! Leaving method sra_reads_to_library\n";
 
-    my $reporter_string = "SRA reads".$reads_to_library_params->{name}." sucessfully uploaded and saved with the reference ".$upload_ret->{obj_ref} .". It is identifed to be a". $readsType."readset";
+    my $reporter_string = "SRA reads ".$reads_to_library_params->{name}." was sucessfully uploaded from the staging area and saved to the Narrative with the reference ".$upload_ret->{obj_ref} .". It is identifed to be a". $readsType." reads set";
 
     print "$reporter_string\n";
 
@@ -2356,20 +2356,16 @@ sub sra_reads_to_library
                                                               'async_version' => 'release',
                                                             )
                                                           );
-    my $objdata = {
-      ref=> $upload_ret->{obj_ref},
-      description => "SRA reads upload"
 
-    };
     my $uid = UUID::Random::generate;
     my $report_context = {
       message => $reporter_string,
-      objects_created => [$objdata],
+      objects_created => [{ref => $upload_ret->{obj_ref}, description => "SRA reads upload"}],
       workspace_name => $reads_to_library_params->{wsname},
       warnings => [],
       html_links => [],
       file_links =>[],
-      report_object_name => "Report".$reads_to_library_params->{name}."-".$uid
+      report_object_name => "Report".$reads_to_library_params->{name}."-".UUID::Random::generate
     };
 
     my $report_response;
@@ -2393,7 +2389,6 @@ sub sra_reads_to_library
     my $report_out = {
       report_name => $report_response->{name},
       report_ref => $report_response->{ref}
-
     };
     return $report_out;
     #END sra_reads_to_library
