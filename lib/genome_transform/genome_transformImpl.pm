@@ -2247,23 +2247,24 @@ sub sra_reads_to_library
 
           my @split_fw = split /\//, $reads_to_library_params->{file_path_list}->[0];
           my $localFw = $rdDir."/".$split_fw[-1];
-          my $converted_file = $split_fw[-1];
 
           #Naming the file with original file name
           $reads_to_library_params->{name} = $split_fw[-1];
-          $converted_file =~ s/.sra$//;
-
           my $decompressed = decompress_using_DFU($self, $localFw);
-          print "converting SRA reads using fast-dump ... will be saved in $sDir\n";
-          sra_converstion($localFw, $sDir);
 
+
+          print "converting SRA reads using fast-dump ... will be saved in $sDir\n";
+          sra_converstion($decompressed, $sDir);
+
+
+          my @split_dc = split /\//, $decompressed;
+          my $converted_file = $split_dc[-1];
+          $converted_file =~ s/.sra$//;
           my $sraOutDirSE = $sDir."/".$converted_file."/fastq";
           my $sraOutDirPE = $sDir."/".$converted_file;
 
           print "file/direcotory listing in output folder\n";
-
-
-          my @cmd = ("ls -lh", $sDir."/".$converted_file);
+          my @cmd = ("ls -lh", $sDir."/");
           system_and_check( join( " ", @cmd ) );
 
           if (-f $sraOutDirSE){
@@ -2277,7 +2278,7 @@ sub sra_reads_to_library
             my @cmd = ("ls -lh", $movedFile);
             system_and_check( join( " ", @cmd ) );
 
-            print "Reads recognized as a SingleEnd, here is a glimpse of the file \n";
+            print "SRA Reads recognized as a SingleEnd, here is the head of the file \n";
             system_and_check("cat $movedFile | head");
 
             $reads_to_library_params->{fwd_file} = $movedFile;
@@ -2303,7 +2304,7 @@ sub sra_reads_to_library
             my @cmd = ("mv", $generatedPE2 ,  $movedPE2  );
             system_and_check( join( " ", @cmd ) );
 
-            print "here is a glimps of one of the PairedEnd reads \n";
+            print "SRA Reads recognized as a PairedEnd, here is the head of one of the PairedEnd reads \n";
             system_and_check("cat $movedPE1 | head");
 
             $reads_to_library_params->{fwd_file} = $movedPE1;
@@ -2347,7 +2348,7 @@ sub sra_reads_to_library
 
     print "$reads_to_library_params->{name} is saved ! Leaving method sra_reads_to_library\n";
 
-    my $reporter_string = "SRA reads ".$reads_to_library_params->{name}." was sucessfully uploaded from the staging area and saved to the Narrative with the reference ".$upload_ret->{obj_ref} .". It is identifed to be a". $readsType." reads set";
+    my $reporter_string = "SRA reads ".$reads_to_library_params->{name}." was sucessfully uploaded from the staging area and saved to the Narrative with the reference ".$upload_ret->{obj_ref} .". It is identifed to be a ". $readsType." reads set";
 
     print "$reporter_string\n";
 

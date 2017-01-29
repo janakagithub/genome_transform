@@ -1209,7 +1209,7 @@ object_id is a string
 
 <pre>
 $reads_to_library_params is a genome_transform.reads_to_library_params
-$return is a genome_transform.object_id
+$return is a genome_transform.sraReadsToLibraryOutput
 reads_to_library_params is a reference to a hash where the following keys are defined:
 	file_path_list has a value which is a reference to a list where each element is a string
 	file_path has a value which is a string
@@ -1248,7 +1248,9 @@ Location is a reference to a hash where the following keys are defined:
 	elevation has a value which is a float
 	date has a value which is a string
 	description has a value which is a string
-object_id is a string
+sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 </pre>
 
@@ -1257,7 +1259,7 @@ object_id is a string
 =begin text
 
 $reads_to_library_params is a genome_transform.reads_to_library_params
-$return is a genome_transform.object_id
+$return is a genome_transform.sraReadsToLibraryOutput
 reads_to_library_params is a reference to a hash where the following keys are defined:
 	file_path_list has a value which is a reference to a list where each element is a string
 	file_path has a value which is a string
@@ -1296,7 +1298,9 @@ Location is a reference to a hash where the following keys are defined:
 	elevation has a value which is a float
 	date has a value which is a string
 	description has a value which is a string
-object_id is a string
+sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a string
 
 
 =end text
@@ -2702,6 +2706,38 @@ sequencing_tech has a value which is a string
 single_genome has a value which is an int
 strain has a value which is a KBaseCommon.StrainInfo
 source has a value which is a KBaseCommon.SourceInfo
+
+
+=end text
+
+=back
+
+
+
+=head2 sraReadsToLibraryOutput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a string
 
 
 =end text
