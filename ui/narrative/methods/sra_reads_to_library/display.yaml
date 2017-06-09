@@ -1,0 +1,53 @@
+#
+# define display information
+#
+name: Upload SRA Reads from Staging Area
+tooltip: |
+    Upload SRA Reads from Staging Area
+screenshots: []
+
+icon: icon.png
+
+#
+# define a set of similar methods that might be useful to the user
+#
+suggestions:
+    apps:
+        related:
+            []
+        next:
+            []
+    methods:
+        related:
+            []
+        next:
+            []
+
+#
+# Configure the display and description of parameters
+#
+parameters :
+    file_path:
+        ui-name : SRA read file name
+        short-hint : SRA read file name
+    name:
+        ui-name : Name of the reads object to be saved
+        short-hint : Name of the reads object to be saved
+    sequencing_tech:
+        ui-name : Sequencing technology
+        short-hint : Sequencing technology used
+    read_orientation_outward:
+        ui-name : Read orientation outward
+        short-hint : Read orientation outward or not
+    insert_size_mean:
+        ui-name : Insert size
+        short-hint : Insert size
+    insert_size_std_dev:
+        ui-name : Standard deviation
+        short-hint : Standard deviation
+    single_genome:
+        ui-name :  Reads belongs to a single genome
+        short-hint : Reads belongs to a single genome or not
+
+description : |
+    <p>This is a methods uploads a read set fasta or fastq into shock.</p>

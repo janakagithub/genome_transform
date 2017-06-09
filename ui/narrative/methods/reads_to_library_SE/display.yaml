@@ -1,0 +1,53 @@
+#
+# define display information
+#
+name: Upload SingleEnd Reads from Staging Area
+tooltip: |
+    Upload SingleEnd Reads from Staging Area
+screenshots: []
+
+icon: icon.png
+
+#
+# define a set of similar methods that might be useful to the user
+#
+suggestions:
+    apps:
+        related:
+            []
+        next:
+            []
+    methods:
+        related:
+            []
+        next:
+            []
+
+#
+# Configure the display and description of parameters
+#
+parameters :
+    file_path_list:
+        ui-name : Paths to reads files
+        short-hint : Paths to reads files
+    name:
+        ui-name : Name of the reads object
+        short-hint : Name of the reads object
+    sequencing_tech:
+        ui-name : sequencing_tech
+        short-hint : sequencing_tech
+    read_orientation_outward:
+        ui-name : read orientation outward
+        short-hint : read orientation outward
+    insert_size_mean:
+        ui-name : Insert size
+        short-hint : Insert size
+    insert_size_std_dev:
+        ui-name : Standard deviation
+        short-hint : Standard deviation
+    single_genome:
+        ui-name :  Reads belongs to a single genome
+        short-hint : Reads belongs to a single genome
+
+description : |
+    <p>This is a methods uploads a read set fasta or fastq into shock.</p>

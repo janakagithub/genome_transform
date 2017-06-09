@@ -26,8 +26,7 @@ genome_transform::genome_transformClient
 =head1 DESCRIPTION
 
 
-A KBase module: genome_transform
-This sample module contains one small method - filter_contigs.
+
 
 
 =cut
@@ -304,6 +303,126 @@ object_id is a string
         Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method narrative_genbank_to_genome",
 					    status_line => $self->{client}->status_line,
 					    method_name => 'narrative_genbank_to_genome',
+				       );
+    }
+}
+ 
+
+
+=head2 genbank_to_genome_GFU
+
+  $return = $obj->genbank_to_genome_GFU($genomeFileUtilInput)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$genomeFileUtilInput is a genome_transform.genomeFileUtilInput
+$return is a genome_transform.object_id
+genomeFileUtilInput is a reference to a hash where the following keys are defined:
+	file has a value which is a genome_transform.File
+	file_path has a value which is a string
+	genome_name has a value which is a string
+	workspace_name has a value which is a string
+	source has a value which is a string
+	taxon_wsname has a value which is a string
+	taxon_reference has a value which is a string
+	release has a value which is a string
+	generate_ids_if_needed has a value which is a string
+	genetic_code has a value which is an int
+	type has a value which is a string
+	metadata has a value which is a genome_transform.usermeta
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	ftp_url has a value which is a string
+usermeta is a reference to a hash where the key is a string and the value is a string
+object_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$genomeFileUtilInput is a genome_transform.genomeFileUtilInput
+$return is a genome_transform.object_id
+genomeFileUtilInput is a reference to a hash where the following keys are defined:
+	file has a value which is a genome_transform.File
+	file_path has a value which is a string
+	genome_name has a value which is a string
+	workspace_name has a value which is a string
+	source has a value which is a string
+	taxon_wsname has a value which is a string
+	taxon_reference has a value which is a string
+	release has a value which is a string
+	generate_ids_if_needed has a value which is a string
+	genetic_code has a value which is an int
+	type has a value which is a string
+	metadata has a value which is a genome_transform.usermeta
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	ftp_url has a value which is a string
+usermeta is a reference to a hash where the key is a string and the value is a string
+object_id is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub genbank_to_genome_GFU
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function genbank_to_genome_GFU (received $n, expecting 1)");
+    }
+    {
+	my($genomeFileUtilInput) = @args;
+
+	my @_bad_arguments;
+        (ref($genomeFileUtilInput) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"genomeFileUtilInput\" (value was \"$genomeFileUtilInput\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to genbank_to_genome_GFU:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'genbank_to_genome_GFU');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "genome_transform.genbank_to_genome_GFU",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'genbank_to_genome_GFU',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method genbank_to_genome_GFU",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'genbank_to_genome_GFU',
 				       );
     }
 }
@@ -916,6 +1035,330 @@ object_id is a string
     }
 }
  
+
+
+=head2 reads_to_library
+
+  $return = $obj->reads_to_library($reads_to_library_params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.object_id
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+object_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.object_id
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+object_id is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub reads_to_library
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function reads_to_library (received $n, expecting 1)");
+    }
+    {
+	my($reads_to_library_params) = @args;
+
+	my @_bad_arguments;
+        (ref($reads_to_library_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"reads_to_library_params\" (value was \"$reads_to_library_params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'reads_to_library');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "genome_transform.reads_to_library",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'reads_to_library',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method reads_to_library",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'reads_to_library',
+				       );
+    }
+}
+ 
+
+
+=head2 sra_reads_to_library
+
+  $return = $obj->sra_reads_to_library($reads_to_library_params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.sraReadsToLibraryOutput
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.sraReadsToLibraryOutput
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+
+=end text
+
+=item Description
+
+
+
+=back
+
+=cut
+
+ sub sra_reads_to_library
+{
+    my($self, @args) = @_;
+
+# Authentication: required
+
+    if ((my $n = @args) != 1)
+    {
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error =>
+							       "Invalid argument count for function sra_reads_to_library (received $n, expecting 1)");
+    }
+    {
+	my($reads_to_library_params) = @args;
+
+	my @_bad_arguments;
+        (ref($reads_to_library_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument 1 \"reads_to_library_params\" (value was \"$reads_to_library_params\")");
+        if (@_bad_arguments) {
+	    my $msg = "Invalid arguments passed to sra_reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	    Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+								   method_name => 'sra_reads_to_library');
+	}
+    }
+
+    my $url = $self->{url};
+    my $result = $self->{client}->call($url, $self->{headers}, {
+	    method => "genome_transform.sra_reads_to_library",
+	    params => \@args,
+    });
+    if ($result) {
+	if ($result->is_error) {
+	    Bio::KBase::Exceptions::JSONRPC->throw(error => $result->error_message,
+					       code => $result->content->{error}->{code},
+					       method_name => 'sra_reads_to_library',
+					       data => $result->content->{error}->{error} # JSON::RPC::ReturnObject only supports JSONRPC 1.1 or 1.O
+					      );
+	} else {
+	    return wantarray ? @{$result->result} : $result->result->[0];
+	}
+    } else {
+        Bio::KBase::Exceptions::HTTP->throw(error => "Error invoking method sra_reads_to_library",
+					    status_line => $self->{client}->status_line,
+					    method_name => 'sra_reads_to_library',
+				       );
+    }
+}
+ 
   
 sub status
 {
@@ -959,16 +1402,16 @@ sub version {
             Bio::KBase::Exceptions::JSONRPC->throw(
                 error => $result->error_message,
                 code => $result->content->{code},
-                method_name => 'rna_sample_set',
+                method_name => 'sra_reads_to_library',
             );
         } else {
             return wantarray ? @{$result->result} : $result->result->[0];
         }
     } else {
         Bio::KBase::Exceptions::HTTP->throw(
-            error => "Error invoking method rna_sample_set",
+            error => "Error invoking method sra_reads_to_library",
             status_line => $self->{client}->status_line,
-            method_name => 'rna_sample_set',
+            method_name => 'sra_reads_to_library',
         );
     }
 }
@@ -1416,6 +1859,10 @@ a float
 
 =item Description
 
+Ref of the resulting object
+
+typedef string object_ref;
+        /*
 sequence type
 
 
@@ -1789,6 +2236,135 @@ html_link has a value which is a genome_transform.object_id
 
 
 
+=head2 File
+
+=over 4
+
+
+
+=item Description
+
+genome_name - becomes the name of the object
+workspace_name - the name of the workspace it gets saved to.
+source - Source of the file typically something like RefSeq or Ensembl
+taxon_ws_name - where the reference taxons are : ReferenceTaxons
+    taxon_reference - if defined, will try to link the Genome to the specified
+taxonomy object insteas of performing the lookup during upload
+release - Release or version number of the data
+  per example Ensembl has numbered releases of all their data: Release 31
+generate_ids_if_needed - If field used for feature id is not there,
+  generate ids (default behavior is raising an exception)
+genetic_code - Genetic code of organism. Overwrites determined GC from
+  taxon object
+type - Reference, Representative or User upload
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+ftp_url has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+ftp_url has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 usermeta
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the key is a string and the value is a string
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the key is a string and the value is a string
+
+=end text
+
+=back
+
+
+
+=head2 genomeFileUtilInput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+file has a value which is a genome_transform.File
+file_path has a value which is a string
+genome_name has a value which is a string
+workspace_name has a value which is a string
+source has a value which is a string
+taxon_wsname has a value which is a string
+taxon_reference has a value which is a string
+release has a value which is a string
+generate_ids_if_needed has a value which is a string
+genetic_code has a value which is an int
+type has a value which is a string
+metadata has a value which is a genome_transform.usermeta
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+file has a value which is a genome_transform.File
+file_path has a value which is a string
+genome_name has a value which is a string
+workspace_name has a value which is a string
+source has a value which is a string
+taxon_wsname has a value which is a string
+taxon_reference has a value which is a string
+release has a value which is a string
+generate_ids_if_needed has a value which is a string
+genetic_code has a value which is an int
+type has a value which is a string
+metadata has a value which is a genome_transform.usermeta
+
+
+=end text
+
+=back
+
+
+
 =head2 fasta_to_contig_params
 
 =over 4
@@ -2070,6 +2646,98 @@ domain has a value which is a string
 sampleset_id has a value which is a string
 sampleset_desc has a value which is a string
 rnaSeqSample has a value which is a reference to a list where each element is a genome_transform.rnaseq_sequence_params
+
+
+=end text
+
+=back
+
+
+
+=head2 reads_to_library_params
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+file_path_list has a value which is a reference to a list where each element is a string
+file_path has a value which is a string
+fwd_file has a value which is a string
+rev_file has a value which is a string
+wsname has a value which is a string
+wsid has a value which is an int
+name has a value which is a string
+objid has a value which is an int
+interleaved has a value which is an int
+insert_size_mean has a value which is a float
+insert_size_std_dev has a value which is a float
+read_orientation_outward has a value which is an int
+sequencing_tech has a value which is a string
+single_genome has a value which is an int
+strain has a value which is a KBaseCommon.StrainInfo
+source has a value which is a KBaseCommon.SourceInfo
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+file_path_list has a value which is a reference to a list where each element is a string
+file_path has a value which is a string
+fwd_file has a value which is a string
+rev_file has a value which is a string
+wsname has a value which is a string
+wsid has a value which is an int
+name has a value which is a string
+objid has a value which is an int
+interleaved has a value which is an int
+insert_size_mean has a value which is a float
+insert_size_std_dev has a value which is a float
+read_orientation_outward has a value which is an int
+sequencing_tech has a value which is a string
+single_genome has a value which is an int
+strain has a value which is a KBaseCommon.StrainInfo
+source has a value which is a KBaseCommon.SourceInfo
+
+
+=end text
+
+=back
+
+
+
+=head2 sraReadsToLibraryOutput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a string
 
 
 =end text

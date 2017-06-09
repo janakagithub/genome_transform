@@ -30,22 +30,28 @@ our $CallContext;
 our %return_counts = (
         'genbank_to_genome' => 1,
         'narrative_genbank_to_genome' => 1,
+        'genbank_to_genome_GFU' => 1,
         'fasta_to_contig' => 1,
         'tsv_to_exp' => 1,
         'reads_to_assembly' => 1,
         'sra_reads_to_assembly' => 1,
         'rna_sample_set' => 1,
+        'reads_to_library' => 1,
+        'sra_reads_to_library' => 1,
         'status' => 1,
 );
 
 our %method_authentication = (
         'genbank_to_genome' => 'required',
         'narrative_genbank_to_genome' => 'required',
+        'genbank_to_genome_GFU' => 'required',
         'fasta_to_contig' => 'required',
         'tsv_to_exp' => 'required',
         'reads_to_assembly' => 'required',
         'sra_reads_to_assembly' => 'required',
         'rna_sample_set' => 'required',
+        'reads_to_library' => 'required',
+        'sra_reads_to_library' => 'required',
 );
 
 sub _build_valid_methods
@@ -54,11 +60,14 @@ sub _build_valid_methods
     my $methods = {
         'genbank_to_genome' => 1,
         'narrative_genbank_to_genome' => 1,
+        'genbank_to_genome_GFU' => 1,
         'fasta_to_contig' => 1,
         'tsv_to_exp' => 1,
         'reads_to_assembly' => 1,
         'sra_reads_to_assembly' => 1,
         'rna_sample_set' => 1,
+        'reads_to_library' => 1,
+        'sra_reads_to_library' => 1,
         'status' => 1,
     };
     return $methods;

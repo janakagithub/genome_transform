@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org
-our $VERSION = '0.0.1';
+our $VERSION = '1.0.0';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = '4cac77ae725e05b5c120a8520ea00cdd98c74029';
+our $GIT_COMMIT_HASH = '777ffefa0b3caaeb03b65f5b55a5ea78c9cde150';
 
 =head1 NAME
 
@@ -13,8 +13,7 @@ genome_transform
 
 =head1 DESCRIPTION
 
-A KBase module: genome_transform
-This sample module contains one small method - filter_contigs.
+
 
 =cut
 
@@ -35,6 +34,11 @@ use File::MMagic;      # needs to be added to container via Dockerfile
 use File::Path;
 use HTTP::Request;     # these two used for direct shock url from
 use LWP::UserAgent;    # 302 redirect
+use UUID::Random;
+use ReadsUtils::ReadsUtilsClient;
+use DataFileUtil::DataFileUtilClient;
+use GenomeFileUtil::GenomeFileUtilClient;
+use KBaseReport::KBaseReportClient;
 
 binmode STDOUT, ":utf8";
 
@@ -42,6 +46,44 @@ binmode STDOUT, ":utf8";
 # decompressed.   In either case, returns the path of the resultant file
 # or directory to be uploaded (which will be the original path if no decompression
 # is necessary)
+
+
+
+sub decompress_using_DFU {
+
+    my ($self, $file_path) = @_;
+    my $DFU = new DataFileUtil::DataFileUtilClient( $self->{'callbackURL'}, #);
+                                                            ( 'service_version' => 'dev',
+                                                              'async_version' => 'dev',
+                                                           )
+                                                         );
+    my $unpackOne;
+    my $inputDFU->{file_path} = $file_path;
+
+
+
+    eval {
+        $unpackOne = $DFU->unpack_file($inputDFU);
+    };
+    if ($@){
+      print "Exception message: " . $@->{"message"} . "\n";
+      print "JSONRPC code: " . $@->{"code"} . "\n";
+      print "Method: " . $@->{"method_name"} . "\n";
+      print "Client-side exception:\n";
+      print $@;
+      print "Server-side exception:\n";
+      print $@->{"data"};
+      die $@;
+    }
+
+    print "uncompressed file path $unpackOne->{file_path}\n";
+
+    return $unpackOne->{file_path};
+
+}
+
+
+
 sub  decompress_if_needed
    {
     my $inpath = shift;
@@ -220,19 +262,28 @@ sub  system_and_check
 
 my $sra_convert_program = "/kb/deployment/bin/fastq-dump";
 
+
+sub sra_converstion {
+
+  my ( $file, $outDir) = @_;
+  system_and_check( "$sra_convert_program --split-3 -T -O $outDir $file" );
+
+}
+
+
+
 sub  convert_sra
    {
     my ( $file, $type ) = @_;
 
     my $fileroot = $file;
     $fileroot =~ s/.sra$//;  # remove any .sra extension
-
     if ( $type eq 'SingleEndLibrary' )
        {
         my $outfile = basename( $fileroot ) . ".fastq";
-        system_and_check( "$sra_convert_program $file" );
+        system_and_check( "$sra_convert_program  $file" );
         if ( -e $outfile )
-           { return( ( $outfile ) ); }
+           {return( ( $outfile ) ); }
         else
            { # maybe try a few other tricks here before bailing
              die "did not file expected $outfile from $sra_convert_program\n";
@@ -242,8 +293,11 @@ sub  convert_sra
        {
         my @outfiles = map( basename( $fileroot ). "_" . $_ . ".fastq", (1,2) );
         system_and_check( "$sra_convert_program --split-files $file" );
+        #system_and_check( "$sra_convert_program --split-3 $file" );
         if ( -e $outfiles[0] && -e $outfiles[1] )
-           { return( @outfiles ); }
+           {
+            print &Dumper ($outfiles[0]);
+            return( \@outfiles ); }
         else
            { # maybe try a few other tricks here before bailing
              die "did not file expected @outfiles from $sra_convert_program\n";
@@ -320,6 +374,11 @@ sub new
     $self->{'workspace-url'} = $wsInstance;
     $self->{'shock-url'} = $ShockInstance;
     $self->{'handle-service-url'} = $HandleInstance;
+
+    print "Instantiating new ReadUtils version of genome_transform\n";
+
+   $self->{'callbackURL'} = $ENV{'SDK_CALLBACK_URL'};
+   print "callbackURL is ", $self->{'callbackURL'}, "\n";
 
     #END_CONSTRUCTOR
 
@@ -588,9 +647,193 @@ sub narrative_genbank_to_genome
     my @_bad_returns;
     (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
     if (@_bad_returns) {
-	   my $msg = "Invalid returns passed to narrative_genbank_to_genome:\n" . join("", map { "\t$_\n" } @_bad_returns);
-	   Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+	my $msg = "Invalid returns passed to narrative_genbank_to_genome:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
 							       method_name => 'narrative_genbank_to_genome');
+    }
+    return($return);
+}
+
+
+
+
+=head2 genbank_to_genome_GFU
+
+  $return = $obj->genbank_to_genome_GFU($genomeFileUtilInput)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$genomeFileUtilInput is a genome_transform.genomeFileUtilInput
+$return is a genome_transform.object_id
+genomeFileUtilInput is a reference to a hash where the following keys are defined:
+	file has a value which is a genome_transform.File
+	file_path has a value which is a string
+	genome_name has a value which is a string
+	workspace_name has a value which is a string
+	source has a value which is a string
+	taxon_wsname has a value which is a string
+	taxon_reference has a value which is a string
+	release has a value which is a string
+	generate_ids_if_needed has a value which is a string
+	genetic_code has a value which is an int
+	type has a value which is a string
+	metadata has a value which is a genome_transform.usermeta
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	ftp_url has a value which is a string
+usermeta is a reference to a hash where the key is a string and the value is a string
+object_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$genomeFileUtilInput is a genome_transform.genomeFileUtilInput
+$return is a genome_transform.object_id
+genomeFileUtilInput is a reference to a hash where the following keys are defined:
+	file has a value which is a genome_transform.File
+	file_path has a value which is a string
+	genome_name has a value which is a string
+	workspace_name has a value which is a string
+	source has a value which is a string
+	taxon_wsname has a value which is a string
+	taxon_reference has a value which is a string
+	release has a value which is a string
+	generate_ids_if_needed has a value which is a string
+	genetic_code has a value which is an int
+	type has a value which is a string
+	metadata has a value which is a genome_transform.usermeta
+File is a reference to a hash where the following keys are defined:
+	path has a value which is a string
+	shock_id has a value which is a string
+	ftp_url has a value which is a string
+usermeta is a reference to a hash where the key is a string and the value is a string
+object_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub genbank_to_genome_GFU
+{
+    my $self = shift;
+    my($genomeFileUtilInput) = @_;
+
+    my @_bad_arguments;
+    (ref($genomeFileUtilInput) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"genomeFileUtilInput\" (value was \"$genomeFileUtilInput\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to genbank_to_genome_GFU:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'genbank_to_genome_GFU');
+    }
+
+    my $ctx = $genome_transform::genome_transformServer::CallContext;
+    my($return);
+    #BEGIN genbank_to_genome_GFU
+    print "starting  genbank_to_genome_GFU(), input params are:\n";
+    print Dumper( $genomeFileUtilInput );
+    if (defined $genomeFileUtilInput->{workspace}){
+    $genomeFileUtilInput->{workspace_name} = $genomeFileUtilInput->{workspace};
+    }
+    my $GFU = new GenomeFileUtil::GenomeFileUtilClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'dev',
+                                                              'async_version' => 'dev',
+                                                            )
+                                                          );
+    my $tmpDir = "/kb/module/work/tmp";
+    my $rdDir = "/kb/module/work/tmp/Genome";
+
+    if (-d $rdDir){
+
+        print "temp/Reads directory exists, continuing..\n";
+    }
+    else{
+
+        mkpath([$tmpDir], 1);
+        mkpath([$rdDir], 1);
+        print "creating a temp/Genome direcotory for data processing, continuing..\n";
+    }
+
+
+    if (defined $genomeFileUtilInput->{file}->{path} || defined $genomeFileUtilInput->{file_path}){
+
+      if (defined $genomeFileUtilInput->{file_path}){
+        $genomeFileUtilInput->{file}->{path} = "/data/bulk/".$ctx->{user_id}."/".$genomeFileUtilInput->{file_path};
+      }
+
+      print "copying Genome to reads files to $rdDir\n";
+      my @cmd = ("cp",
+         $genomeFileUtilInput->{file}->{path},
+         $rdDir);
+      my $rc = system_and_check( join( " ", @cmd ) );
+
+      my @split_name = split /\//, $genomeFileUtilInput->{file}->{path};
+
+      if (!defined $genomeFileUtilInput->{genome_name}){
+          $genomeFileUtilInput->{genome_name} = $split_name[-1];
+      }
+
+      my $localGenome = $rdDir."/".$split_name[-1];
+
+
+      $genomeFileUtilInput->{file}->{path} = decompress_using_DFU($self, $localGenome);
+
+    }
+
+
+    my $upload_ret;
+    eval {
+      print "input params before submitting to GenomeFileUtils\n";
+      print &Dumper ($genomeFileUtilInput);
+      my @cmd = ("ls -lh", '/kb/module/work/tmp/Genome');
+      system_and_check( join( " ", @cmd ) );
+      $upload_ret = $GFU->genbank_to_genome($genomeFileUtilInput);
+    };
+
+    if ($@){
+      print "Exception message: " . $@->{"message"} . "\n";
+      print "JSONRPC code: " . $@->{"code"} . "\n";
+      print "Method: " . $@->{"method_name"} . "\n";
+      print "Client-side exception:\n";
+      print $@;
+      print "Server-side exception:\n";
+      print $@->{"data"};
+      die $@;
+    }
+
+   ############Creting a Report######################
+
+   ##################################################
+
+    my $genome_ref = $upload_ret->{genome_ref};
+    print &Dumper ($upload_ret);
+
+    return $genome_ref;
+
+    #END genbank_to_genome_GFU
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to genbank_to_genome_GFU:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'genbank_to_genome_GFU');
     }
     return($return);
 }
@@ -1580,6 +1823,589 @@ sub rna_sample_set
 
 
 
+=head2 reads_to_library
+
+  $return = $obj->reads_to_library($reads_to_library_params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.object_id
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+object_id is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.object_id
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+object_id is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub reads_to_library
+{
+    my $self = shift;
+    my($reads_to_library_params) = @_;
+
+    my @_bad_arguments;
+    (ref($reads_to_library_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"reads_to_library_params\" (value was \"$reads_to_library_params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'reads_to_library');
+    }
+
+    my $ctx = $genome_transform::genome_transformServer::CallContext;
+    my($return);
+    #BEGIN reads_to_library
+    print "starting  method reads_to_library(), input params are:\n";
+    print Dumper( $reads_to_library_params );
+
+    my $ReadsUtilsInit = new ReadsUtils::ReadsUtilsClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'dev',
+                                                              'async_version' => 'dev',
+                                                            )
+                                                          );
+    my $tmpDir = "/kb/module/work/tmp";
+    my $rdDir = "/kb/module/work/tmp/Reads";
+
+    if (-d $rdDir){
+
+        print "temp/Reads directory exists, continuing..\n";
+    }
+    else{
+
+        mkpath([$tmpDir], 1);
+        mkpath([$rdDir], 1);
+        print "creating a temp/Reads direcotory for data processing, continuing..\n";
+    }
+
+
+    print "length of input file array  ". @{$reads_to_library_params->{file_path_list}}. "\n";
+
+
+    if (defined $reads_to_library_params->{file_path_list} &&  (@{$reads_to_library_params->{file_path_list}} == 2)  ){
+
+          print "copying PE reads files to $rdDir\n";
+          my @cmd = ("cp",
+               $reads_to_library_params->{file_path_list}->[0],
+               $rdDir);
+          my $rc = system_and_check( join( " ", @cmd ) );
+          my @cmd = ("cp",
+               $reads_to_library_params->{file_path_list}->[1],
+               $rdDir);
+          my $rc = system_and_check( join( " ", @cmd ) );
+
+          my @split_fw = split /\//, $reads_to_library_params->{file_path_list}->[0];
+          my @split_rv = split /\//, $reads_to_library_params->{file_path_list}->[1];
+          #Naming the read object with original name
+          $reads_to_library_params->{name} =  $split_fw[-1];
+          my $localFw = $rdDir."/".$split_fw[-1];
+          my $localRw = $rdDir."/".$split_rv[-1];
+
+          $reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $localFw );
+          $reads_to_library_params->{rev_file} = decompress_using_DFU( $self, $localRw );
+
+          #DFU cannot write to the staging area directly
+          #$reads_to_library_params->{fwd_file} = decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[0] );
+          #$reads_to_library_params->{rev_file} = decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[1] );
+
+    }
+    elsif (defined $reads_to_library_params->{file_path_list} &&  (@{$reads_to_library_params->{file_path_list}} == 1)  ){
+          print "copying SE reads file to $rdDir\n";
+          my @cmd = ("cp",
+               $reads_to_library_params->{file_path_list}->[0],
+               $rdDir);
+          my $rc = system_and_check( join( " ", @cmd ) );
+          my @split_fw = split /\//, $reads_to_library_params->{file_path_list}->[0];
+
+          #Naming the read object with original name
+          $reads_to_library_params->{name} =  $split_fw[-1];
+          my $localFw = $rdDir."/".$split_fw[-1];
+          $reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $localFw );
+
+          #DFU cannot write to the staging area directly
+          #$reads_to_library_params->{fwd_file}= decompress_using_DFU( $self, $reads_to_library_params->{file_path_list}->[0] );
+    }
+    else{
+
+      die "reads file paths are not defined, terminating ...\n";
+    }
+
+
+    my $upload_ret;
+    eval {
+      print "input params before submitting to ReadUtils\n";
+      print &Dumper ($reads_to_library_params);
+      my @cmd = ("ls -lh", '/kb/module/work/tmp/Reads');
+      system_and_check( join( " ", @cmd ) );
+      $upload_ret = $ReadsUtilsInit->upload_reads($reads_to_library_params );
+    };
+
+    if ($@){
+      print "Exception message: " . $@->{"message"} . "\n";
+      print "JSONRPC code: " . $@->{"code"} . "\n";
+      print "Method: " . $@->{"method_name"} . "\n";
+      print "Client-side exception:\n";
+      print $@;
+      print "Server-side exception:\n";
+      print $@->{"data"};
+      die $@;
+    }
+
+    print "$reads_to_library_params->{name} is saved ! Leaving method reads_to_library\n";
+    return $upload_ret->{obj_ref};
+
+    #END reads_to_library
+    my @_bad_returns;
+    (!ref($return)) or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'reads_to_library');
+    }
+    return($return);
+}
+
+
+
+
+=head2 sra_reads_to_library
+
+  $return = $obj->sra_reads_to_library($reads_to_library_params)
+
+=over 4
+
+=item Parameter and return types
+
+=begin html
+
+<pre>
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.sraReadsToLibraryOutput
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+$reads_to_library_params is a genome_transform.reads_to_library_params
+$return is a genome_transform.sraReadsToLibraryOutput
+reads_to_library_params is a reference to a hash where the following keys are defined:
+	file_path_list has a value which is a reference to a list where each element is a string
+	file_path has a value which is a string
+	fwd_file has a value which is a string
+	rev_file has a value which is a string
+	wsname has a value which is a string
+	wsid has a value which is an int
+	name has a value which is a string
+	objid has a value which is an int
+	interleaved has a value which is an int
+	insert_size_mean has a value which is a float
+	insert_size_std_dev has a value which is a float
+	read_orientation_outward has a value which is an int
+	sequencing_tech has a value which is a string
+	single_genome has a value which is an int
+	strain has a value which is a KBaseCommon.StrainInfo
+	source has a value which is a KBaseCommon.SourceInfo
+StrainInfo is a reference to a hash where the following keys are defined:
+	genetic_code has a value which is an int
+	genus has a value which is a string
+	species has a value which is a string
+	strain has a value which is a string
+	organelle has a value which is a string
+	source has a value which is a KBaseCommon.SourceInfo
+	ncbi_taxid has a value which is an int
+	location has a value which is a KBaseCommon.Location
+SourceInfo is a reference to a hash where the following keys are defined:
+	source has a value which is a string
+	source_id has a value which is a KBaseCommon.source_id
+	project_id has a value which is a KBaseCommon.project_id
+source_id is a string
+project_id is a string
+Location is a reference to a hash where the following keys are defined:
+	lat has a value which is a float
+	lon has a value which is a float
+	elevation has a value which is a float
+	date has a value which is a string
+	description has a value which is a string
+sraReadsToLibraryOutput is a reference to a hash where the following keys are defined:
+	report_name has a value which is a string
+	report_ref has a value which is a string
+
+
+=end text
+
+
+
+=item Description
+
+
+
+=back
+
+=cut
+
+sub sra_reads_to_library
+{
+    my $self = shift;
+    my($reads_to_library_params) = @_;
+
+    my @_bad_arguments;
+    (ref($reads_to_library_params) eq 'HASH') or push(@_bad_arguments, "Invalid type for argument \"reads_to_library_params\" (value was \"$reads_to_library_params\")");
+    if (@_bad_arguments) {
+	my $msg = "Invalid arguments passed to sra_reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_arguments);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'sra_reads_to_library');
+    }
+
+    my $ctx = $genome_transform::genome_transformServer::CallContext;
+    my($return);
+    #BEGIN sra_reads_to_library
+    print "starting method sra_reads_to_library(), input params for this method:\n";
+    print Dumper( $reads_to_library_params );
+
+    my $ReadsUtilsInit = new ReadsUtils::ReadsUtilsClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
+                                                            )
+                                                          );
+    if (defined $reads_to_library_params->{workspace}){
+       $reads_to_library_params->{wsname} = $reads_to_library_params->{workspace};
+    }
+
+    my $readsType = "";
+    my $tmpDir = "/kb/module/work/tmp";
+    my $rdDir = "/kb/module/work/tmp/Reads";
+    my $sDir = "/kb/module/work/tmp/sra";
+
+    if (-d $rdDir){
+
+        print "temp/Reads directory exists, continuing..\n";
+    }
+    else{
+
+        mkpath([$tmpDir], 1);
+        mkpath([$rdDir], 1);
+        mkpath([$sDir], 1);
+        print "creating a temp/Reads direcotory for data processing, continuing..\n";
+    }
+
+
+    if (defined $reads_to_library_params->{file_path_list} || defined $reads_to_library_params->{file_path}) {
+
+          if (defined $reads_to_library_params->{file_path}){
+            $reads_to_library_params->{file_path_list}->[0] = "/data/bulk/".$ctx->{user_id}."/".$reads_to_library_params->{file_path};
+          }
+
+          print "copying reads file into $rdDir \n";
+          my @cmd = ("cp",
+          $reads_to_library_params->{file_path_list}->[0],
+          $rdDir);
+          my $rc = system_and_check( join( " ", @cmd ) );
+
+          print "reads file copied..\n";
+          my @cmd = ("ls -lh", $rdDir);
+          system_and_check( join( " ", @cmd ) );
+
+          my @split_fw = split /\//, $reads_to_library_params->{file_path_list}->[0];
+          my $localFw = $rdDir."/".$split_fw[-1];
+
+          #Naming the file with original file name
+          $reads_to_library_params->{name} = $split_fw[-1];
+          my $decompressed = decompress_using_DFU($self, $localFw);
+
+
+          print "converting SRA reads using fast-dump ... will be saved in $sDir\n";
+          sra_converstion($decompressed, $sDir);
+
+
+          my @split_dc = split /\//, $decompressed;
+          my $converted_file = $split_dc[-1];
+          $converted_file =~ s/.sra$//;
+          my $sraOutDirSE = $sDir."/".$converted_file."/fastq";
+          my $sraOutDirPE = $sDir."/".$converted_file;
+
+          print "file/direcotory listing in output folder\n";
+          my @cmd = ("ls -lh", $sDir."/");
+          system_and_check( join( " ", @cmd ) );
+
+          if (-f $sraOutDirSE){
+
+            my $movedFile = $sraOutDirSE.".fastq";
+            #This needs to be changed in ReadUtils, we should not have to check for extension
+            print "file renamed with the extension .fastq, listing file\n";
+            my @cmd = ("mv", $sraOutDirSE ,  $movedFile  );
+            system_and_check( join( " ", @cmd ) );
+
+            my @cmd = ("ls -lh", $movedFile);
+            system_and_check( join( " ", @cmd ) );
+
+            print "SRA Reads recognized as a SingleEnd, here is the head of the file \n";
+            system_and_check("cat $movedFile | head");
+
+            $reads_to_library_params->{fwd_file} = $movedFile;
+
+            $readsType = "SingleEnd";
+          }
+          elsif (-d $sraOutDirPE){
+
+            print "listing direcotries generated from fastq-dump\n";
+            my @cmd = ("ls -lh", $sraOutDirPE);
+            system_and_check( join( " ", @cmd ) );
+
+            my $generatedPE1 = $sraOutDirPE."/1/fastq";
+            my $generatedPE2 = $sraOutDirPE."/2/fastq";
+            print "renaming files with .fastq extension \n";
+            my $movedPE1 = $generatedPE1.".fastq";
+            my $movedPE2 = $generatedPE2.".fastq";
+
+
+            my @cmd = ("mv", $generatedPE1 ,  $movedPE1  );
+            system_and_check( join( " ", @cmd ) );
+
+            my @cmd = ("mv", $generatedPE2 ,  $movedPE2  );
+            system_and_check( join( " ", @cmd ) );
+
+            print "SRA Reads recognized as a PairedEnd, here is the head of one of the PairedEnd reads \n";
+            system_and_check("cat $movedPE1 | head");
+
+            $reads_to_library_params->{fwd_file} = $movedPE1;
+            $reads_to_library_params->{rev_file} = $movedPE2;
+
+            $readsType = "PairedEnd";
+            #die;
+          }
+          else{
+
+              die "fast-dump did not convert sra files sucessfully, terminating..\n";
+          }
+
+
+     }
+     else{
+
+      die "reads file paths are not defined, terminating ...\n";
+
+     }
+
+    my $upload_ret; #->{obj_ref} = "7995/66/2";
+    eval {
+      print "input params before submitting to ReadUtils\n";
+      print &Dumper ($reads_to_library_params);
+      my @cmd = ("ls -lh", '/kb/module/work/tmp/sra');
+      system_and_check( join( " ", @cmd ) );
+      $upload_ret = $ReadsUtilsInit->upload_reads($reads_to_library_params);
+    };
+
+    if ($@){
+      print "Exception message: " . $@->{"message"} . "\n";
+      print "JSONRPC code: " . $@->{"code"} . "\n";
+      print "Method: " . $@->{"method_name"} . "\n";
+      print "Client-side exception:\n";
+      print $@;
+      print "Server-side exception:\n";
+      print $@->{"data"};
+      die $@;
+    }
+
+    print "$reads_to_library_params->{name} is saved ! Leaving method sra_reads_to_library\n";
+
+    my $reporter_string = "SRA reads ".$reads_to_library_params->{name}." was sucessfully uploaded from the staging area and saved to the Narrative with the reference ".$upload_ret->{obj_ref} .". It is identifed to be a ". $readsType." reads set";
+
+    print "$reporter_string\n";
+
+    my $reportHandle = new KBaseReport::KBaseReportClient( $self->{'callbackURL'},
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
+                                                            )
+                                                          );
+
+    my $uid = UUID::Random::generate;
+    my $report_context = {
+      message => $reporter_string,
+      objects_created => [{ref => $upload_ret->{obj_ref}, description => "SRA reads upload"}],
+      workspace_name => $reads_to_library_params->{wsname},
+      warnings => [],
+      html_links => [],
+      file_links =>[],
+      report_object_name => "Report".$reads_to_library_params->{name}."-".UUID::Random::generate
+    };
+
+    my $report_response;
+    eval {
+      $report_response = $reportHandle->create_extended_report($report_context);
+    };
+    if ($@){
+      print "Exception message: " . $@->{"message"} . "\n";
+      print "JSONRPC code: " . $@->{"code"} . "\n";
+      print "Method: " . $@->{"method_name"} . "\n";
+      print "Client-side exception:\n";
+      print $@;
+      print "Server-side exception:\n";
+      print $@->{"data"};
+      die $@;
+    }
+
+    print "Report is generated: name and the ref as follows\n";
+    print &Dumper ($report_response);
+
+    my $report_out = {
+      report_name => $report_response->{name},
+      report_ref => $report_response->{ref}
+    };
+    return $report_out;
+    #END sra_reads_to_library
+    my @_bad_returns;
+    (ref($return) eq 'HASH') or push(@_bad_returns, "Invalid type for return variable \"return\" (value was \"$return\")");
+    if (@_bad_returns) {
+	my $msg = "Invalid returns passed to sra_reads_to_library:\n" . join("", map { "\t$_\n" } @_bad_returns);
+	Bio::KBase::Exceptions::ArgumentValidationError->throw(error => $msg,
+							       method_name => 'sra_reads_to_library');
+    }
+    return($return);
+}
+
+
+
+
 =head2 status
 
   $return = $obj->status()
@@ -2034,6 +2860,10 @@ a float
 
 =item Description
 
+Ref of the resulting object
+
+typedef string object_ref;
+        /*
 sequence type
 
 
@@ -2407,6 +3237,135 @@ html_link has a value which is a genome_transform.object_id
 
 
 
+=head2 File
+
+=over 4
+
+
+
+=item Description
+
+genome_name - becomes the name of the object
+workspace_name - the name of the workspace it gets saved to.
+source - Source of the file typically something like RefSeq or Ensembl
+taxon_ws_name - where the reference taxons are : ReferenceTaxons
+    taxon_reference - if defined, will try to link the Genome to the specified
+taxonomy object insteas of performing the lookup during upload
+release - Release or version number of the data
+  per example Ensembl has numbered releases of all their data: Release 31
+generate_ids_if_needed - If field used for feature id is not there,
+  generate ids (default behavior is raising an exception)
+genetic_code - Genetic code of organism. Overwrites determined GC from
+  taxon object
+type - Reference, Representative or User upload
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+ftp_url has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+path has a value which is a string
+shock_id has a value which is a string
+ftp_url has a value which is a string
+
+
+=end text
+
+=back
+
+
+
+=head2 usermeta
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the key is a string and the value is a string
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the key is a string and the value is a string
+
+=end text
+
+=back
+
+
+
+=head2 genomeFileUtilInput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+file has a value which is a genome_transform.File
+file_path has a value which is a string
+genome_name has a value which is a string
+workspace_name has a value which is a string
+source has a value which is a string
+taxon_wsname has a value which is a string
+taxon_reference has a value which is a string
+release has a value which is a string
+generate_ids_if_needed has a value which is a string
+genetic_code has a value which is an int
+type has a value which is a string
+metadata has a value which is a genome_transform.usermeta
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+file has a value which is a genome_transform.File
+file_path has a value which is a string
+genome_name has a value which is a string
+workspace_name has a value which is a string
+source has a value which is a string
+taxon_wsname has a value which is a string
+taxon_reference has a value which is a string
+release has a value which is a string
+generate_ids_if_needed has a value which is a string
+genetic_code has a value which is an int
+type has a value which is a string
+metadata has a value which is a genome_transform.usermeta
+
+
+=end text
+
+=back
+
+
+
 =head2 fasta_to_contig_params
 
 =over 4
@@ -2688,6 +3647,98 @@ domain has a value which is a string
 sampleset_id has a value which is a string
 sampleset_desc has a value which is a string
 rnaSeqSample has a value which is a reference to a list where each element is a genome_transform.rnaseq_sequence_params
+
+
+=end text
+
+=back
+
+
+
+=head2 reads_to_library_params
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+file_path_list has a value which is a reference to a list where each element is a string
+file_path has a value which is a string
+fwd_file has a value which is a string
+rev_file has a value which is a string
+wsname has a value which is a string
+wsid has a value which is an int
+name has a value which is a string
+objid has a value which is an int
+interleaved has a value which is an int
+insert_size_mean has a value which is a float
+insert_size_std_dev has a value which is a float
+read_orientation_outward has a value which is an int
+sequencing_tech has a value which is a string
+single_genome has a value which is an int
+strain has a value which is a KBaseCommon.StrainInfo
+source has a value which is a KBaseCommon.SourceInfo
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+file_path_list has a value which is a reference to a list where each element is a string
+file_path has a value which is a string
+fwd_file has a value which is a string
+rev_file has a value which is a string
+wsname has a value which is a string
+wsid has a value which is an int
+name has a value which is a string
+objid has a value which is an int
+interleaved has a value which is an int
+insert_size_mean has a value which is a float
+insert_size_std_dev has a value which is a float
+read_orientation_outward has a value which is an int
+sequencing_tech has a value which is a string
+single_genome has a value which is an int
+strain has a value which is a KBaseCommon.StrainInfo
+source has a value which is a KBaseCommon.SourceInfo
+
+
+=end text
+
+=back
+
+
+
+=head2 sraReadsToLibraryOutput
+
+=over 4
+
+
+
+=item Definition
+
+=begin html
+
+<pre>
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a string
+
+</pre>
+
+=end html
+
+=begin text
+
+a reference to a hash where the following keys are defined:
+report_name has a value which is a string
+report_ref has a value which is a string
 
 
 =end text

@@ -3,7 +3,7 @@
 #
 name: Load GenBank Genomes
 tooltip: |
-    Load GenBank genomes into the Narrative from staging area
+    Load GenBank Genomes from Staging Area
 screenshots: []
 
 icon: icon.png
@@ -27,15 +27,15 @@ suggestions:
 # Configure the display and description of parameters
 #
 parameters :
-    genbank_file_path:
+    file_path:
         ui-name : GenBank Genome File
         short-hint : Selected GenBank file
-    genome_id:
+    genome_name:
         ui-name : Name of the Genome to be saved
         short-hint : Name or id of the genome that will be saved in KBase Narrative
-    html_link:
-        ui-name : Optional public ftp link for uploading GenBank genomes
-        short-hint : Optional public ftp link for uploading a genomes in .gbk format
+    source:
+        ui-name : source of the genome (e.g ncbi)
+        short-hint : source of the genome (e.g ncbi)
 
 description : |
-    <p>This method upload GenBank files from staging area to the narrative.</p>
+    <p>This method upload GenBank files from users ftp space into the narrative workspace.</p>

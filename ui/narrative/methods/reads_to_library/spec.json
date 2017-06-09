@@ -16,6 +16,17 @@
             "optional" : false,
             "advanced" : false,
             "allow_multiple" : true,
+            "default_values" : [ "/data/bulktest/data/bulktest/janakakbase/reads/frag_1.fastq" ],
+            "field_type" : "text",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id" : "name",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
             "default_values" : [ "" ],
             "field_type" : "text",
             "text_options" : {
@@ -23,62 +34,47 @@
             }
         },
         {
-         "field_type" : "checkbox",
-         "allow_multiple" : false,
-         "optional" : false,
-         "id" : "outward",
-         "advanced" : false,
-         "default_values" : [0],
-          "checkbox_options" : {
-            "unchecked_value" : 0,
-            "checked_value" : 1
-          },
-          "text_options" : {
-            "valid_ws_types" : []
-          }
-        },
-        {
-            "id" : "reads_id",
+            "id" : "sequencing_tech",
             "optional" : false,
             "advanced" : false,
             "allow_multiple" : false,
             "default_values" : [ "" ],
             "field_type" : "text",
             "text_options" : {
-                "valid_ws_types" : ["KBaseAssembly.PairedEndLibrary"],
+                "valid_ws_types" : ["KBaseFile.PairedEndLibrary"],
                 "is_output_name":true
 
             }
         },
         {
-            "id" : "insert_size",
+            "id" : "insert_size_mean",
             "optional" : true,
             "advanced" : false,
             "allow_multiple" : false,
-            "default_values" : [  ],
-            "field_type" : "text",
+            "default_values" : [ 300 ],
+            "field_type" : "float",
             "text_options" : {
                 "valid_ws_types" : [ ]
             }
         },
         {
-            "id" : "std_dev",
+            "id" : "insert_size_std_dev",
             "optional" : true,
             "advanced" : false,
             "allow_multiple" : false,
-            "default_values" : [ ],
-            "field_type" : "text",
+            "default_values" : [ 60 ],
+            "field_type" : "float",
             "text_options" : {
                 "valid_ws_types" : [ ]
             }
         },
         {
-            "id" : "reads_type",
+            "id" : "single_genome",
             "optional" : false,
             "advanced" : false,
             "allow_multiple" : false,
-            "default_values" : [ "PairedEndLibrary" ],
-            "field_type" : "text",
+            "default_values" : [ 1],
+            "field_type" : "int",
             "text_options" : {
                 "valid_ws_types" : [ ]
             }
@@ -88,35 +84,35 @@
         "service-mapping": {
             "url": "",
             "name": "genome_transform",
-            "method": "reads_to_assembly",
+            "method": "reads_to_library",
             "input_mapping": [
                 {
-                    "narrative_system_variable": "workspace",
-                    "target_property": "workspace"
+                    "narrative_system_variable": "wsid",
+                    "target_property": "wsid"
                 },
                 {
-                    "input_parameter": "reads_type",
-                    "target_property": "reads_type"
+                    "input_parameter": "name",
+                    "target_property": "name"
                 },
                 {
                     "input_parameter": "file_path_list",
                     "target_property": "file_path_list"
                 },
                 {
-                    "input_parameter": "reads_id",
-                    "target_property": "reads_id"
+                    "input_parameter": "single_genome",
+                    "target_property": "single_genome"
                 },
                 {
-                    "input_parameter": "outward",
-                    "target_property": "outward"
+                    "input_parameter": "insert_size_std_dev",
+                    "target_property": "insert_size_std_dev"
                 },
                 {
-                    "input_parameter": "insert_size",
-                    "target_property": "insert_size"
+                    "input_parameter": "insert_size_mean",
+                    "target_property": "insert_size_mean"
                 },
                 {
-                    "input_parameter": "std_dev",
-                    "target_property": "std_dev"
+                    "input_parameter": "sequencing_tech",
+                    "target_property": "sequencing_tech"
                 }
             ],
             "output_mapping": [
@@ -125,7 +121,7 @@
                   "target_property": "ws"
                 },
                 {
-                  "constant_value": "KBaseAssembly.PairedEndLibrary",
+                  "constant_value": "KBaseFile.PairedEndLibrary",
                   "target_property": "type"
                 },
                 {

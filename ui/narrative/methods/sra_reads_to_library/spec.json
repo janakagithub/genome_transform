@@ -1,0 +1,195 @@
+{   "ver": "1.0.0",
+
+    "authors": [
+        "janaka"
+    ],
+    "contact": "help@kbase.us",
+    "visible": false,
+    "categories": ["inactive","upload"],
+    "widgets": {
+        "input": null,
+        "output": "no-display"
+    },
+    "parameters": [
+        {
+            "id" : "file_path",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ ],
+            "field_type" : "text",
+            "text_options" : {
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id": "sequencing_tech",
+            "optional": false,
+            "advanced": false,
+            "allow_multiple": false,
+            "default_values": [ "Unknown" ],
+            "field_type": "dropdown",
+            "dropdown_options": {
+                "options": [
+                    {
+                      "value": "PacBioCLR",
+                      "display": "PacBio CLR",
+                      "id": "PacBioCLR",
+                      "ui_name": "PacBioCLR"
+                    },
+                    {
+                      "value": "Illumina",
+                      "display": "Illumina",
+                      "id": "Illumina",
+                      "ui_name": "Illumina"
+                    },
+                    {
+                      "value": "PacBioCCS",
+                      "display": "PacBio CCS",
+                      "id": "PacBioCCS",
+                      "ui_name": "PacBioCCS"
+                    },
+                    {
+                      "value": "IonTorrent",
+                      "display": "Ion Torrent",
+                      "id": "IonTorrent",
+                      "ui_name": "IonTorrent"
+                    },
+                    {
+                      "value": "Unknown",
+                      "display": "Unknown",
+                      "id": "Unknown",
+                      "ui_name": "Unknown"
+                    }
+                ]
+
+            }
+        },
+        {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "read_orientation_outward",
+         "advanced" : false,
+         "default_values" : [0],
+          "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+          },
+          "text_options" : {
+            "valid_ws_types" : []
+          }
+        },
+        {
+            "id" : "insert_size_mean",
+            "optional" : true,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [],
+            "field_type" : "text",
+            "text_options" : {
+                "validate_as": "float",
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+            "id" : "insert_size_std_dev",
+            "optional" : true,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [],
+            "field_type" : "text",
+            "text_options" : {
+                "validate_as": "float",
+                "valid_ws_types" : [ ]
+            }
+        },
+        {
+         "field_type" : "checkbox",
+         "allow_multiple" : false,
+         "optional" : true,
+         "id" : "single_genome",
+         "advanced" : false,
+         "default_values" : [1],
+          "checkbox_options" : {
+            "unchecked_value" : 0,
+            "checked_value" : 1
+          },
+          "text_options" : {
+            "valid_ws_types" : []
+          }
+        },
+        {
+            "id" : "name",
+            "optional" : false,
+            "advanced" : false,
+            "allow_multiple" : false,
+            "default_values" : [ ],
+            "field_type" : "text",
+            "text_options" : {
+                "is_output_name":true
+
+            }
+        }
+    ],
+    "behavior": {
+        "service-mapping": {
+            "url": "",
+            "name": "genome_transform",
+            "method": "sra_reads_to_library",
+            "input_mapping": [
+                {
+                    "narrative_system_variable": "workspace",
+                    "target_property": "workspace"
+                },
+                {
+                    "input_parameter": "name",
+                    "target_property": "name"
+                },
+                {
+                    "input_parameter": "file_path",
+                    "target_property": "file_path"
+                },
+                {
+                    "input_parameter": "single_genome",
+                    "target_property": "single_genome"
+                },
+                {
+                    "input_parameter": "insert_size_std_dev",
+                    "target_property": "insert_size_std_dev"
+                },
+                {
+                    "input_parameter": "read_orientation_outward",
+                    "target_property": "read_orientation_outward"
+                },
+                {
+                    "input_parameter": "insert_size_mean",
+                    "target_property": "insert_size_mean"
+                },
+                {
+                    "input_parameter": "sequencing_tech",
+                    "target_property": "sequencing_tech"
+                }
+            ],
+            "output_mapping": [
+                {
+                  "narrative_system_variable": "workspace",
+                  "target_property": "ws"
+                },
+                {
+                    "service_method_output_path": [0, "report_name"],
+                    "target_property": "report_name"
+                },
+                {
+                    "service_method_output_path": [0, "report_ref"],
+                    "target_property": "report_ref"
+                },
+                {
+                    "constant_value": "16",
+                    "target_property": "report_window_line_height"
+                }
+            ]
+        }
+    },
+    "job_id_output_field": "docker"
+}
