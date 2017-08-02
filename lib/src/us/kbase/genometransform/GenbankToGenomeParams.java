@@ -30,7 +30,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "genbank_file_path",
     "workspace",
     "genome_id",
-    "contigset_id"
+    "html_link"
 })
 public class GenbankToGenomeParams {
 
@@ -42,8 +42,8 @@ public class GenbankToGenomeParams {
     private String workspace;
     @JsonProperty("genome_id")
     private String genomeId;
-    @JsonProperty("contigset_id")
-    private String contigsetId;
+    @JsonProperty("html_link")
+    private String htmlLink;
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("genbank_shock_ref")
@@ -106,18 +106,18 @@ public class GenbankToGenomeParams {
         return this;
     }
 
-    @JsonProperty("contigset_id")
-    public String getContigsetId() {
-        return contigsetId;
+    @JsonProperty("html_link")
+    public String getHtmlLink() {
+        return htmlLink;
     }
 
-    @JsonProperty("contigset_id")
-    public void setContigsetId(String contigsetId) {
-        this.contigsetId = contigsetId;
+    @JsonProperty("html_link")
+    public void setHtmlLink(String htmlLink) {
+        this.htmlLink = htmlLink;
     }
 
-    public GenbankToGenomeParams withContigsetId(String contigsetId) {
-        this.contigsetId = contigsetId;
+    public GenbankToGenomeParams withHtmlLink(String htmlLink) {
+        this.htmlLink = htmlLink;
         return this;
     }
 
@@ -133,7 +133,7 @@ public class GenbankToGenomeParams {
 
     @Override
     public String toString() {
-        return ((((((((((((("GenbankToGenomeParams"+" [genbankShockRef=")+ genbankShockRef)+", genbankFilePath=")+ genbankFilePath)+", workspace=")+ workspace)+", genomeId=")+ genomeId)+", contigsetId=")+ contigsetId)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((("GenbankToGenomeParams"+" [genbankShockRef=")+ genbankShockRef)+", genbankFilePath=")+ genbankFilePath)+", workspace=")+ workspace)+", genomeId=")+ genomeId)+", htmlLink=")+ htmlLink)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

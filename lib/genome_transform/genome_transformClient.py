@@ -378,8 +378,8 @@ class genome_transform(object):
            external), parameter "project_id" of type "project_id" (An ID used
            for a project encompassing a piece of data at its source. @id
            external)
-        :returns: instance of type "object_id" (Name of an object in the
-           KBase workspace)
+        :returns: instance of type "sraReadsToLibraryOutput" -> structure:
+           parameter "report_name" of String, parameter "report_ref" of String
         """
         return self._client.call_method(
             'genome_transform.sra_reads_to_library',

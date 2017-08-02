@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import us.kbase.auth.AuthToken;
 import us.kbase.common.service.JsonClientCaller;
 import us.kbase.common.service.JsonClientException;
@@ -15,12 +16,11 @@ import us.kbase.common.service.UnauthorizedException;
 /**
  * <p>Original spec-file module name: genome_transform</p>
  * <pre>
- * A KBase module: genome_transform
- * This sample module contains one small method - filter_contigs.
  * </pre>
  */
 public class GenomeTransformClient {
     private JsonClientCaller caller;
+    private String serviceVersion = null;
 
 
     /** Constructs a client with a custom URL and no user credentials.
@@ -50,6 +50,20 @@ public class GenomeTransformClient {
      */
     public GenomeTransformClient(URL url, String user, String password) throws UnauthorizedException, IOException {
         caller = new JsonClientCaller(url, user, password);
+    }
+
+    /** Constructs a client with a custom URL
+     * and a custom authorization service URL.
+     * @param url the URL of the service.
+     * @param user the user name.
+     * @param password the password for the user name.
+     * @param auth the URL of the authorization server.
+     * @throws UnauthorizedException if the credentials are not valid.
+     * @throws IOException if an IOException occurs when checking the user's
+     * credentials.
+     */
+    public GenomeTransformClient(URL url, String user, String password, URL auth) throws UnauthorizedException, IOException {
+        caller = new JsonClientCaller(url, user, password, auth);
     }
 
     /** Get the token this client uses to communicate with the server.
@@ -139,6 +153,14 @@ public class GenomeTransformClient {
         caller.setFileForNextRpcResponse(f);
     }
 
+    public String getServiceVersion() {
+        return this.serviceVersion;
+    }
+
+    public void setServiceVersion(String newValue) {
+        this.serviceVersion = newValue;
+    }
+
     /**
      * <p>Original spec-file function name: genbank_to_genome</p>
      * <pre>
@@ -152,7 +174,41 @@ public class GenomeTransformClient {
         List<Object> args = new ArrayList<Object>();
         args.add(arg1);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("genome_transform.genbank_to_genome", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("genome_transform.genbank_to_genome", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: narrative_genbank_to_genome</p>
+     * <pre>
+     * </pre>
+     * @param   arg1   instance of type {@link us.kbase.genometransform.NarrativeGenbankToGenomeParams NarrativeGenbankToGenomeParams} (original type "narrativeGenbank_to_genome_params")
+     * @return   instance of original type "object_id" (Name of an object in the KBase workspace)
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String narrativeGenbankToGenome(NarrativeGenbankToGenomeParams arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(arg1);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("genome_transform.narrative_genbank_to_genome", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: genbank_to_genome_GFU</p>
+     * <pre>
+     * </pre>
+     * @param   arg1   instance of type {@link us.kbase.genometransform.GenomeFileUtilInput GenomeFileUtilInput} (original type "genomeFileUtilInput")
+     * @return   instance of original type "object_id" (Name of an object in the KBase workspace)
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String genbankToGenomeGFU(GenomeFileUtilInput arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(arg1);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("genome_transform.genbank_to_genome_GFU", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -169,7 +225,7 @@ public class GenomeTransformClient {
         List<Object> args = new ArrayList<Object>();
         args.add(arg1);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("genome_transform.fasta_to_contig", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("genome_transform.fasta_to_contig", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -186,7 +242,7 @@ public class GenomeTransformClient {
         List<Object> args = new ArrayList<Object>();
         args.add(arg1);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("genome_transform.tsv_to_exp", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("genome_transform.tsv_to_exp", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -203,7 +259,7 @@ public class GenomeTransformClient {
         List<Object> args = new ArrayList<Object>();
         args.add(arg1);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("genome_transform.reads_to_assembly", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("genome_transform.reads_to_assembly", args, retType, true, true, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 
@@ -211,16 +267,74 @@ public class GenomeTransformClient {
      * <p>Original spec-file function name: sra_reads_to_assembly</p>
      * <pre>
      * </pre>
-     * @param   arg1   instance of type {@link us.kbase.genometransform.SraReadsToAssemblyParams SraReadsToAssemblyParams} (original type "sra_reads_to_assembly_params")
+     * @param   arg1   instance of type {@link us.kbase.genometransform.ReadsToAssemblyParams ReadsToAssemblyParams} (original type "reads_to_assembly_params")
      * @return   instance of original type "object_id" (Name of an object in the KBase workspace)
      * @throws IOException if an IO exception occurs
      * @throws JsonClientException if a JSON RPC exception occurs
      */
-    public String sraReadsToAssembly(SraReadsToAssemblyParams arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+    public String sraReadsToAssembly(ReadsToAssemblyParams arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
         List<Object> args = new ArrayList<Object>();
         args.add(arg1);
         TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
-        List<String> res = caller.jsonrpcCall("genome_transform.sra_reads_to_assembly", args, retType, true, true, jsonRpcContext);
+        List<String> res = caller.jsonrpcCall("genome_transform.sra_reads_to_assembly", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: rna_sample_set</p>
+     * <pre>
+     * </pre>
+     * @param   arg1   instance of type {@link us.kbase.genometransform.RnaSampleSetParams RnaSampleSetParams} (original type "rna_sample_set_params")
+     * @return   instance of original type "object_id" (Name of an object in the KBase workspace)
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String rnaSampleSet(RnaSampleSetParams arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(arg1);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("genome_transform.rna_sample_set", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: reads_to_library</p>
+     * <pre>
+     * </pre>
+     * @param   arg1   instance of type {@link us.kbase.genometransform.ReadsToLibraryParams ReadsToLibraryParams} (original type "reads_to_library_params")
+     * @return   instance of original type "object_id" (Name of an object in the KBase workspace)
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public String readsToLibrary(ReadsToLibraryParams arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(arg1);
+        TypeReference<List<String>> retType = new TypeReference<List<String>>() {};
+        List<String> res = caller.jsonrpcCall("genome_transform.reads_to_library", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    /**
+     * <p>Original spec-file function name: sra_reads_to_library</p>
+     * <pre>
+     * </pre>
+     * @param   arg1   instance of type {@link us.kbase.genometransform.ReadsToLibraryParams ReadsToLibraryParams} (original type "reads_to_library_params")
+     * @return   instance of type {@link us.kbase.genometransform.SraReadsToLibraryOutput SraReadsToLibraryOutput} (original type "sraReadsToLibraryOutput")
+     * @throws IOException if an IO exception occurs
+     * @throws JsonClientException if a JSON RPC exception occurs
+     */
+    public SraReadsToLibraryOutput sraReadsToLibrary(ReadsToLibraryParams arg1, RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        args.add(arg1);
+        TypeReference<List<SraReadsToLibraryOutput>> retType = new TypeReference<List<SraReadsToLibraryOutput>>() {};
+        List<SraReadsToLibraryOutput> res = caller.jsonrpcCall("genome_transform.sra_reads_to_library", args, retType, true, true, jsonRpcContext, this.serviceVersion);
+        return res.get(0);
+    }
+
+    public Map<String, Object> status(RpcContext... jsonRpcContext) throws IOException, JsonClientException {
+        List<Object> args = new ArrayList<Object>();
+        TypeReference<List<Map<String, Object>>> retType = new TypeReference<List<Map<String, Object>>>() {};
+        List<Map<String, Object>> res = caller.jsonrpcCall("genome_transform.status", args, retType, true, false, jsonRpcContext, this.serviceVersion);
         return res.get(0);
     }
 }

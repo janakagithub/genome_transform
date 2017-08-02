@@ -14,14 +14,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 /**
  * <p>Original spec-file type: reads_to_assembly_params</p>
- * <pre>
- * Input parameters for the "reads to assembly" function.
- * shock_ref shock_ref - optional URL to genbank file stored in Shock
- * file_path file_path - optional path to genbank file on local file system
- * workspace_id workspace - workspace where object will be saved
- * object_id reads_id - workspace ID to which the genome object should be saved
- * object_id contigset_id - workspace ID to which the contigs should be saved
- * </pre>
+ * 
  * 
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -31,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
     "reads_handle_ref",
     "reads_type",
     "file_path_list",
+    "rnaSeqMetaData",
     "workspace",
     "reads_id",
     "outward",
@@ -47,6 +41,8 @@ public class ReadsToAssemblyParams {
     private java.lang.String readsType;
     @JsonProperty("file_path_list")
     private List<String> filePathList;
+    @JsonProperty("rnaSeqMetaData")
+    private Map<String, RnaSeqMeta> rnaSeqMetaData;
     @JsonProperty("workspace")
     private java.lang.String workspace;
     @JsonProperty("reads_id")
@@ -116,6 +112,21 @@ public class ReadsToAssemblyParams {
 
     public ReadsToAssemblyParams withFilePathList(List<String> filePathList) {
         this.filePathList = filePathList;
+        return this;
+    }
+
+    @JsonProperty("rnaSeqMetaData")
+    public Map<String, RnaSeqMeta> getRnaSeqMetaData() {
+        return rnaSeqMetaData;
+    }
+
+    @JsonProperty("rnaSeqMetaData")
+    public void setRnaSeqMetaData(Map<String, RnaSeqMeta> rnaSeqMetaData) {
+        this.rnaSeqMetaData = rnaSeqMetaData;
+    }
+
+    public ReadsToAssemblyParams withRnaSeqMetaData(Map<String, RnaSeqMeta> rnaSeqMetaData) {
+        this.rnaSeqMetaData = rnaSeqMetaData;
         return this;
     }
 
@@ -206,7 +217,7 @@ public class ReadsToAssemblyParams {
 
     @Override
     public java.lang.String toString() {
-        return ((((((((((((((((((((("ReadsToAssemblyParams"+" [readsShockRef=")+ readsShockRef)+", readsHandleRef=")+ readsHandleRef)+", readsType=")+ readsType)+", filePathList=")+ filePathList)+", workspace=")+ workspace)+", readsId=")+ readsId)+", outward=")+ outward)+", insertSize=")+ insertSize)+", stdDev=")+ stdDev)+", additionalProperties=")+ additionalProperties)+"]");
+        return ((((((((((((((((((((((("ReadsToAssemblyParams"+" [readsShockRef=")+ readsShockRef)+", readsHandleRef=")+ readsHandleRef)+", readsType=")+ readsType)+", filePathList=")+ filePathList)+", rnaSeqMetaData=")+ rnaSeqMetaData)+", workspace=")+ workspace)+", readsId=")+ readsId)+", outward=")+ outward)+", insertSize=")+ insertSize)+", stdDev=")+ stdDev)+", additionalProperties=")+ additionalProperties)+"]");
     }
 
 }

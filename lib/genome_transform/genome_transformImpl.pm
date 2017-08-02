@@ -3,9 +3,9 @@ use strict;
 use Bio::KBase::Exceptions;
 # Use Semantic Versioning (2.0.0-rc.1)
 # http://semver.org
-our $VERSION = '1.0.0';
+our $VERSION = '1.2.1';
 our $GIT_URL = 'https://github.com/kbaseapps/genome_transform';
-our $GIT_COMMIT_HASH = '777ffefa0b3caaeb03b65f5b55a5ea78c9cde150';
+our $GIT_COMMIT_HASH = 'e852911112588c2f10848f270cc4cb68ab6cca66';
 
 =head1 NAME
 
@@ -19,7 +19,8 @@ genome_transform
 
 #BEGIN_HEADER
 use Bio::KBase::AuthToken;
-use Bio::KBase::workspace::Client;
+#use Bio::KBase::workspace::Client;
+use Workspace::WorkspaceClient;
 use Config::IniFiles;
 use Cwd;
 use Data::Dumper;
@@ -53,8 +54,8 @@ sub decompress_using_DFU {
 
     my ($self, $file_path) = @_;
     my $DFU = new DataFileUtil::DataFileUtilClient( $self->{'callbackURL'}, #);
-                                                            ( 'service_version' => 'dev',
-                                                              'async_version' => 'dev',
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
                                                            )
                                                          );
     my $unpackOne;
@@ -371,6 +372,7 @@ sub new
     my $HandleInstance = $cfg->val('genome_transform','handle-service-url');
     die "no handle-service-url defined" unless $HandleInstance;
 
+    $self->{'kbase-endpoint'} = $cfg->val('genome_transform','kbase-endpoint');
     $self->{'workspace-url'} = $wsInstance;
     $self->{'shock-url'} = $ShockInstance;
     $self->{'handle-service-url'} = $HandleInstance;
@@ -753,8 +755,8 @@ sub genbank_to_genome_GFU
     $genomeFileUtilInput->{workspace_name} = $genomeFileUtilInput->{workspace};
     }
     my $GFU = new GenomeFileUtil::GenomeFileUtilClient( $self->{'callbackURL'},
-                                                            ( 'service_version' => 'dev',
-                                                              'async_version' => 'dev',
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
                                                             )
                                                           );
     my $tmpDir = "/kb/module/work/tmp";
@@ -915,7 +917,7 @@ sub fasta_to_contig
     #BEGIN fasta_to_contig
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
-    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
+    my $wsClient=Workspace::WorkspaceClient->new($self->{'workspace-url'},token=>$token);
 
     my $file_path = $fasta_to_contig_params->{fasta_file_path};
     my $workspace = $fasta_to_contig_params->{workspace};
@@ -1066,7 +1068,7 @@ sub tsv_to_exp
     #BEGIN tsv_to_exp
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
-    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
+    my $wsClient=Workspace::WorkspaceClient->new($self->{'workspace-url'},token=>$token);
 
     my $file_path = $tsv_to_exp_params->{tsvexp_file_path};
     my $workspace = $tsv_to_exp_params->{workspace};
@@ -1266,7 +1268,7 @@ sub reads_to_assembly
 
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
-    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
+    my $wsClient=Workspace::WorkspaceClient->new($self->{'workspace-url'},token=>$token);
 
     my $file_path = $reads_to_assembly_params->{file_path_list};
     my $workspace = $reads_to_assembly_params->{workspace};
@@ -1486,7 +1488,7 @@ sub sra_reads_to_assembly
     my $provenance=$ctx->provenance;
     #print "in sra_reads_to_assembly()\n";
     #print "workspace is ", $self->{'workspace-url'}, "\ntoken is ", $token, "\n";
-    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
+    my $wsClient=Workspace::WorkspaceClient->new($self->{'workspace-url'},token=>$token);
 
     my $file_path = $reads_to_assembly_params->{file_path_list};
     my $workspace = $reads_to_assembly_params->{workspace};
@@ -1713,7 +1715,7 @@ sub rna_sample_set
     my $implr = new genome_transform::genome_transformImpl();
     my $token=$ctx->token;
     my $provenance=$ctx->provenance;
-    my $wsClient=Bio::KBase::workspace::Client->new($self->{'workspace-url'},token=>$token);
+    my $wsClient=Workspace::WorkspaceClient->new($self->{'workspace-url'},token=>$token);
 
     print "starting creating a RNA sample set....\n";
 
@@ -1957,10 +1959,11 @@ sub reads_to_library
     print Dumper( $reads_to_library_params );
 
     my $ReadsUtilsInit = new ReadsUtils::ReadsUtilsClient( $self->{'callbackURL'},
-                                                            ( 'service_version' => 'dev',
-                                                              'async_version' => 'dev',
+                                                            ( 'service_version' => 'release',
+                                                              'async_version' => 'release',
                                                             )
                                                           );
+
     my $tmpDir = "/kb/module/work/tmp";
     my $rdDir = "/kb/module/work/tmp/Reads";
 
@@ -2203,10 +2206,10 @@ sub sra_reads_to_library
     print Dumper( $reads_to_library_params );
 
     my $ReadsUtilsInit = new ReadsUtils::ReadsUtilsClient( $self->{'callbackURL'},
-                                                            ( 'service_version' => 'release',
-                                                              'async_version' => 'release',
-                                                            )
-                                                          );
+                                                           ( 'service_version' => 'release',
+                                                           'async_version' => 'release',
+                                                           )
+                                                        );
     if (defined $reads_to_library_params->{workspace}){
        $reads_to_library_params->{wsname} = $reads_to_library_params->{workspace};
     }
