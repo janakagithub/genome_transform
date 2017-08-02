@@ -100,20 +100,19 @@ sub new
     # We create an auth token, passing through the arguments that we were (hopefully) given.
 
     {
-	my $token = Bio::KBase::AuthToken->new(@args);
-	
-	if (!$token->error_message)
-	{
-	    $self->{token} = $token->token;
-	    $self->{client}->{token} = $token->token;
+	my %arg_hash2 = @args;
+	if (exists $arg_hash2{"token"}) {
+	    $self->{token} = $arg_hash2{"token"};
+	} elsif (exists $arg_hash2{"user_id"}) {
+	    my $token = Bio::KBase::AuthToken->new(@args);
+	    if (!$token->error_message) {
+	        $self->{token} = $token->token;
+	    }
 	}
-        else
-        {
-	    #
-	    # All methods in this module require authentication. In this case, if we
-	    # don't have a token, we can't continue.
-	    #
-	    die "Authentication failed: " . $token->error_message;
+	
+	if (exists $self->{token})
+	{
+	    $self->{client}->{token} = $self->{token};
 	}
     }
 
@@ -318,6 +317,9 @@ $result is a GenomeFileUtil.GenomeToGFFResult
 GenomeToGFFParams is a reference to a hash where the following keys are defined:
 	genome_ref has a value which is a string
 	ref_path_to_genome has a value which is a reference to a list where each element is a string
+	is_gtf has a value which is a GenomeFileUtil.boolean
+	target_dir has a value which is a string
+boolean is an int
 GenomeToGFFResult is a reference to a hash where the following keys are defined:
 	gff_file has a value which is a GenomeFileUtil.File
 	from_cache has a value which is a GenomeFileUtil.boolean
@@ -325,7 +327,6 @@ File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
 	ftp_url has a value which is a string
-boolean is an int
 
 </pre>
 
@@ -338,6 +339,9 @@ $result is a GenomeFileUtil.GenomeToGFFResult
 GenomeToGFFParams is a reference to a hash where the following keys are defined:
 	genome_ref has a value which is a string
 	ref_path_to_genome has a value which is a reference to a list where each element is a string
+	is_gtf has a value which is a GenomeFileUtil.boolean
+	target_dir has a value which is a string
+boolean is an int
 GenomeToGFFResult is a reference to a hash where the following keys are defined:
 	gff_file has a value which is a GenomeFileUtil.File
 	from_cache has a value which is a GenomeFileUtil.boolean
@@ -345,7 +349,6 @@ File is a reference to a hash where the following keys are defined:
 	path has a value which is a string
 	shock_id has a value which is a string
 	ftp_url has a value which is a string
-boolean is an int
 
 
 =end text
@@ -950,6 +953,14 @@ genome_ref has a value which is a string
 
 
 
+=item Description
+
+is_gtf - optional flag switching export to GTF format (default is 0, 
+    which means GFF)
+target_dir - optional target directory to create file in (default is
+    temporary folder with name 'gff_<timestamp>' created in scratch)
+
+
 =item Definition
 
 =begin html
@@ -958,6 +969,8 @@ genome_ref has a value which is a string
 a reference to a hash where the following keys are defined:
 genome_ref has a value which is a string
 ref_path_to_genome has a value which is a reference to a list where each element is a string
+is_gtf has a value which is a GenomeFileUtil.boolean
+target_dir has a value which is a string
 
 </pre>
 
@@ -968,6 +981,8 @@ ref_path_to_genome has a value which is a reference to a list where each element
 a reference to a hash where the following keys are defined:
 genome_ref has a value which is a string
 ref_path_to_genome has a value which is a reference to a list where each element is a string
+is_gtf has a value which is a GenomeFileUtil.boolean
+target_dir has a value which is a string
 
 
 =end text
